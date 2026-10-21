@@ -1,0 +1,172 @@
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {
+            50: '#eef4ff', 100: '#dbe7ff', 200: '#bcd1ff', 300: '#8fb2ff',
+            400: '#5c8cf7', 500: '#3b73f0', 600: '#2563eb', 700: '#1d4ed8',
+            800: '#0b1f4d', 900: '#0a1128'
+          },
+          accent: {
+            50: '#eef4ff', 100: '#dbe7ff', 200: '#bcd1ff', 300: '#8fb2ff',
+            400: '#5c8cf7', 500: '#2563eb', 600: '#1d4ed8', 700: '#1e40af'
+          }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html { background: #f4f7fd; }
+  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #0a1128; }
+  .btn-brand { background: #2563eb; color: #fff; }
+  .btn-brand:hover { background: #1d4ed8; }
+</style>
+
+<style>
+  /* ===== Lapisan desain global (upgrade tampilan semua halaman) ===== */
+  :root { --ring: rgba(37, 99, 235, .14); }
+  body { -webkit-font-smoothing: antialiased; }
+
+  /* Sudut lebih lembut & border lebih halus */
+  [class*="rounded-[2px]"] { border-radius: 12px !important; }
+  [class*="rounded-[2px]"][class*="w-7"], [class*="rounded-[2px]"][class*="w-8"],
+  [class*="rounded-[2px]"][class*="w-9"], [class*="rounded-[2px]"][class*="w-10"] { border-radius: 9px !important; }
+  [class*="border-[#dddddd]"], [class*="border-gray-300"] { border-color: #e2e8f0 !important; }
+  [class*="bg-[#f9f9f9]"] { background-color: #f8fafc !important; }
+  .divide-y > :not([hidden]) ~ :not([hidden]) { border-color: #eef2f7 !important; }
+
+  /* Kartu */
+  .bg-white[class*="border-[#dddddd]"], .bg-white[class*="border-slate-200"] {
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 4px 14px -6px rgba(15, 23, 42, .08);
+  }
+
+  /* Input & select */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), select, textarea {
+    transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
+    border-color: #2563eb !important; box-shadow: 0 0 0 4px var(--ring) !important; outline: none !important;
+  }
+  input::placeholder, textarea::placeholder { color: #94a3b8; font-weight: 400; }
+  input[type="checkbox"] { accent-color: #2563eb; }
+
+  /* Tombol */
+  button, a[class*="bg-brand-"], a[class*="bg-red-"], a[class*="bg-green-"] { transition: all .15s ease; }
+  button.bg-brand-600, a.bg-brand-600 {
+    background-image: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    box-shadow: 0 1px 2px rgba(37, 99, 235, .35), 0 6px 14px -6px rgba(37, 99, 235, .55);
+  }
+  button.bg-brand-600:hover, a.bg-brand-600:hover { background-image: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%); }
+  button.bg-brand-600:active, a.bg-brand-600:active { transform: translateY(1px); }
+  button.bg-red-500, button.bg-red-600 { box-shadow: 0 6px 14px -6px rgba(239, 68, 68, .55); }
+
+  /* Tabel */
+  table { border-collapse: separate; border-spacing: 0; }
+  table thead th {
+    font-size: 11px !important; letter-spacing: .04em; text-transform: uppercase;
+    color: #64748b !important; font-weight: 600 !important; background: #f8fafc !important;
+  }
+  table tbody tr { transition: background-color .12s ease; }
+  table tbody tr:hover { background-color: #f8fafc; }
+
+  /* Modal */
+  [id$="Modal"] > .backdrop-blur-sm, .backdrop-blur-sm { backdrop-filter: blur(4px); background: rgba(15, 23, 42, .45) !important; }
+  [id$="Modal"] .shadow-sm { box-shadow: 0 24px 60px -20px rgba(15, 23, 42, .45) !important; }
+
+  /* Scrollbar tabel */
+  .custom-scroll::-webkit-scrollbar { width: 4px !important; height: 4px !important; }
+  .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1 !important; border-radius: 10px; }
+
+  /* Komponen kepala halaman */
+  .pg-head { display: flex; align-items: center; gap: 12px; margin: 4px 0 16px; }
+  .pg-head .pg-ico { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px; }
+  .pg-head h1 { font-size: 18px; font-weight: 600; color: #1e293b; line-height: 1.2; margin: 0; }
+  .pg-head p { font-size: 12.5px; color: #64748b; margin: 2px 0 0; }
+</style>
+
+<style>
+  /* ===================== ARTA PEDIA PAY : NOIR MANGA =====================
+     Biru, putih, hitam. Outline tegas + bayangan keras (efek 3D cel-shade) + screentone halus. */
+  :root { --ink:#0a1128; --navy:#0b1f4d; --blue:#2563eb; --blue-d:#1d4ed8; --sky:#eaf1ff; --paper:#f4f7fd; --mute:#475569; --ring: rgba(37,99,235,.22); }
+  html, body { background-color: var(--paper) !important; }
+  html body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif !important; font-weight: 400; color: var(--ink) !important; }
+  body {
+    background-image: radial-gradient(rgba(10,17,40,.07) 1px, transparent 1.4px) !important;
+    background-size: 16px 16px !important; background-attachment: fixed !important;
+  }
+  h1, h2, .pg-head h1 { font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif !important; font-weight: 800 !important; letter-spacing: .02em; color: var(--ink) !important; }
+  h1, .pg-head h1 { text-transform: uppercase; }
+  h1 { font-size: 1.9rem !important; line-height: 1.05; } h2 { font-size: 1.45rem !important; }
+  .text-slate-800, .text-gray-800, .text-slate-700, .text-gray-700, .text-slate-900 { color: var(--ink) !important; }
+  .text-slate-500, .text-gray-500, .text-slate-600, .text-gray-600, .text-gray-400, .text-slate-400 { color: var(--mute) !important; }
+  .pg-head p { color: var(--mute) !important; }
+
+  /* Kartu = panel manga */
+  .bg-white[class*="border"], .bg-white[class*="rounded"] {
+    border: 2px solid var(--ink) !important; border-radius: 14px !important;
+    box-shadow: 5px 5px 0 var(--ink) !important;
+  }
+  .bg-white .bg-white, .bg-white .bg-white[class*="border"] { box-shadow: none !important; border-width: 1.5px !important; border-color: #cbd5e1 !important; border-radius: 10px !important; }
+  .bg-white[class*="border-t-4"] { border-top: 6px solid var(--blue) !important; }
+  [class*="border-slate-200"], [class*="border-gray-200"], [class*="border-slate-100"] { border-color: #cbd5e1 !important; }
+  [class*="bg-slate-50"], [class*="bg-gray-50"], [class*="bg-[#f9f9f9]"] { background-color: var(--sky) !important; }
+  .bg-brand-50 { background: var(--sky) !important; }
+  .bg-brand-600 { background: var(--blue) !important; color: #fff !important; }
+
+  /* Tombol: outline tegas + tebal bawah */
+  button, a[class*="bg-brand-"], a[class*="bg-emerald-"], a[class*="bg-red-"], a[class*="bg-green-"] { font-weight: 600 !important; letter-spacing: .01em; }
+  button.bg-brand-600, a.bg-brand-600, button.bg-brand-700, a.bg-brand-700, .btn-brand {
+    background: var(--blue) !important; background-image: none !important; color: #fff !important; text-shadow: none;
+    border: 2px solid var(--ink) !important; border-radius: 10px !important; box-shadow: 0 4px 0 var(--ink) !important;
+    transition: transform .1s, box-shadow .1s, background .15s !important;
+  }
+  button.bg-brand-600:hover, a.bg-brand-600:hover, button.bg-brand-700:hover, a.bg-brand-700:hover, .btn-brand:hover { background: var(--blue-d) !important; transform: translateY(-1px); box-shadow: 0 5px 0 var(--ink) !important; }
+  button.bg-brand-600:active, a.bg-brand-600:active, button.bg-brand-700:active, a.bg-brand-700:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--ink) !important; }
+  button[class*="bg-red-"], button[class*="bg-emerald-"], button[class*="bg-green-"], button[class*="bg-amber-"], button[class*="bg-slate-"][class*="text-white"] {
+    border: 2px solid var(--ink) !important; border-radius: 10px !important; box-shadow: 0 3px 0 var(--ink) !important; color: #fff !important;
+  }
+  button[class*="bg-red-"]:active, button[class*="bg-emerald-"]:active, button[class*="bg-green-"]:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ink) !important; }
+
+  /* Input */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="hidden"]), select, textarea {
+    border: 2px solid var(--ink) !important; border-radius: 10px !important; background: #fff !important; color: var(--ink) !important;
+    font-weight: 500 !important; box-shadow: none !important;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus { border-color: var(--blue) !important; box-shadow: 3px 3px 0 var(--blue) !important; }
+  input::placeholder, textarea::placeholder { color: #94a3b8 !important; font-weight: 400 !important; }
+
+  /* Topbar, menu, drawer */
+  .topbar { background: var(--ink) !important; border-bottom: 3px solid var(--blue) !important; }
+  .menubar { background: var(--navy) !important; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; font-size: 13px !important; }
+  .drawer { background: var(--ink) !important; border-right: 2px solid var(--blue); }
+  .drawer a.active { background: rgba(37,99,235,.22) !important; border-left-color: var(--blue) !important; }
+
+  /* Tabel */
+  table thead th { background: var(--ink) !important; color: #fff !important; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: .08em; font-weight: 600 !important; font-size: 11px !important; }
+  table tbody tr:hover { background-color: var(--sky) !important; }
+  table td, table th { border-color: #dbe3f1 !important; }
+
+  /* Modal */
+  [id$="Modal"] .bg-white { border: 2px solid var(--ink) !important; box-shadow: 8px 8px 0 var(--blue) !important; }
+
+  /* Ikon kepala halaman */
+  .pg-head .pg-ico { border: 0 !important; background: var(--ink) !important; color: #fff !important; border-radius: 10px !important; box-shadow: 3px 3px 0 var(--blue); }
+
+  /* Input di dalam pembungkus (mis. kolom password + tombol mata): pembungkus yang diberi outline */
+  input[class*="bg-transparent"] { border: 0 !important; background: transparent !important; box-shadow: none !important; border-radius: 0 !important; }
+  div[class*="focus-within:border-brand"] { border: 2px solid var(--ink) !important; border-radius: 10px !important; background: #fff !important; }
+  div[class*="focus-within:border-brand"]:focus-within { border-color: var(--blue) !important; box-shadow: 3px 3px 0 var(--blue) !important; }
+  div[class*="focus-within:border-brand"] input:focus { box-shadow: none !important; }
+
+  /* Drawer tertutup tidak boleh meninggalkan bayangan/garis di tepi layar */
+  .sidebar-checkbox:not(:checked) ~ .drawer { box-shadow: none !important; border-right: 0 !important; }
+  ::-webkit-scrollbar-thumb { background: var(--ink); }
+</style>

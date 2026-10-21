@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment <%= settings.name %></title>
+        <%- include('partials/theme') %>
+
+    <style>
+        html {
+            background: #f9fafb;
+        }
+        body {
+            padding: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar {
+            width: 2px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="max-w-md mx-auto bg-white rounded-xl border border-slate-200 border-t-4 border-t-brand-600 shadow-lg flex flex-col overflow-hidden">
+
+    <%
+    const status = invoice.status;
+    const isPending = status === 'pending';
+    const isPaid = status === 'paid';
+    const isExpired = status === 'expired';
+    const isCancelled = status === 'cancelled';
+    const projectNameDisplay = (typeof projectName !== 'undefined' && projectName) ? projectName : '';
+    var callbackUrl = (typeof callbackUrl !== 'undefined' && callbackUrl) ? callbackUrl : '';
+    var isValidCallback = callbackUrl && callbackUrl !== '-' && /^https?:\/\/.+/.test(callbackUrl);
+
+    // Logo: gunakan merchantLogoUrl jika ada, jika tidak gunakan logo dari settings
+    var logoUrl = (typeof merchantLogoUrl !== 'undefined' && merchantLogoUrl) ? merchantLogoUrl : settings.logoUrl;
+    %>
+
+    <!-- Navbar fixed -->
+    <div class="sticky top-0 z-10 bg-white border-b border-[#dddddd] flex justify-center items-center px-4 h-16">
+        <div class="flex justify-center items-center gap-2.5">
+            <img src="<%= logoUrl %>" alt="Logo" class="w-9 h-9 rounded-[2px] object-cover border border-gray-200" onerror="this.style.display='none'">
+            <% if (projectNameDisplay) { %>
+            <span class="text-xl font-medium text-gray-700"><%= projectNameDisplay %></span>
+            <% } else { %>
+            <span class="text-xl font-medium text-gray-700"><%= settings.name %></span>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Konten utama -->
+    <div class="flex-1 flex flex-col justify-center items-center px-5 py-4">
+
+        <!-- QR Code (hanya jika pending) -->
+        <% if (isPending && invoice.qris_image) { %>
+        <div id="qrCodeWrapper" class="text-center mb-2 mt-6">
+            <div class="inline-block bg-gray-50 border border-[#dddddd] rounded-[2px] p-3">
+                <img src="<%= invoice.qris_image %>" alt="QR Code" class="w-48 h-48 object-contain rounded-[2px]" onerror="this.style.display='none'">
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Icon sukses (awalnya tersembunyi) -->
+        <div id="successIcon" class="text-center mt-10 mb-10 <%= isPaid ? '' : 'hidden' %>">
+            <i class="fas fa-check-circle text-green-500 text-6xl"></i>
+            <p class="text-green-600 font-medium text-xl mt-2">Pembayaran Berhasil</p>
+        </div>
+
+        <!-- Status expired (awalnya tersembunyi, kecuali saat server render expired) -->
+        <div id="expiredIcon" class="text-center mb-10 mt-10 <%= isExpired ? '' : 'hidden' %>">
+            <i class="fas fa-times-circle text-red-500 text-6xl"></i>
+            <p class="text-red-600 font-medium text-xl mt-2">Pembayaran Kadaluarsa</p>
+        </div>
+
+        <!-- Status dibatalkan -->
+        <div id="cancelledIcon" class="text-center mb-10 mt-10 <%= isCancelled ? '' : 'hidden' %>">
+            <i class="fas fa-ban text-slate-500 text-6xl"></i>
+            <p class="text-slate-600 font-medium text-xl mt-2">Transaksi Dibatalkan</p>
+        </div>
+
+        <!-- Countdown QRIS (hanya saat pending) -->
+        <% if (isPending && invoice.expiredAt) { %>
+        <div id="countdownContainer" class="text-center mb-6 text-[12.5px] text-gray-700 font-medium">
+            Batas Waktu Pembayaran: <span class="font-medium text-[#dc2626] py-0.5 rounded-[2px]" id="countdownTimer">--:--:--</span>
+        </div>
+        <% } %>
+
+        <!-- Detail Invoice -->
+        <table class="w-full text-[12.5px] border-collapse border border-[#dddddd] mb-4 bg-gray-50">
+            <tbody>
+                <tr>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800 w-3/2">Invoice ID</td>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800 break-all"><%= invoice._id %></td>
+                </tr>
+                <tr>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800">Status</td>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium" id="statusCell">
+                        <% if (isPending) { %>
+                        <span class="text-[#eab308]"><i class="fas fa-clock text-[12.5px] mr-0.3"></i> Menunggu Pembayaran</span>
+                        <% } else if (isPaid) { %>
+                        <span class="text-brand-600"><i class="fas fa-check-circle text-[12.5px] mr-0.3"></i> Pembayaran Berhasil</span>
+                        <% } else if (isExpired) { %>
+                        <span class="text-[#dc2626]"><i class="fas fa-times-circle text-[12.5px] mr-0.3"></i> Pembayaran Kedaluwarsa</span>
+                        <% } else if (isCancelled) { %>
+                        <span class="text-slate-600"><i class="fas fa-ban text-[12.5px] mr-0.3"></i> Transaksi Dibatalkan</span>
+                        <% } %>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800">Nominal</td>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800">Rp <%= invoice.amount.toLocaleString('id-ID') %></td>
+                </tr>
+                <tr>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800">Fee</td>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800">Rp <%= invoice.fee.toLocaleString('id-ID') %></td>
+                </tr>
+                <tr>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800">Total Bayar</td>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800">Rp <%= invoice.total.toLocaleString('id-ID') %></td>
+                </tr>
+                <tr>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800">Tanggal</td>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800"><%= new Date(invoice.createdAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) %></td>
+                </tr>
+                <!-- Dibayar Pada (hanya jika paid) -->
+                <tr id="paidDateRow" class="<%= (isPaid && invoice.completedAt) ? '' : 'hidden' %>">
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800">Dibayar Pada</td>
+                    <td class="px-3 py-2 border border-[#dddddd] font-medium text-gray-800" id="paidDateCell">
+                        <%= (isPaid && invoice.completedAt) ? new Date(invoice.completedAt).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) : '' %>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Tombol Aksi -->
+        <% if (isPending) { %>
+        <button id="payButton" onclick="checkPaymentStatus()" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2 shadow-sm">
+            <i class="fas fa-check-circle text-[12.5px]"></i> Saya Sudah Bayar
+        </button>
+        <button id="cancelButton" onclick="cancelPayment()" class="w-full mt-3 bg-white hover:bg-red-50 text-red-600 border border-red-200 py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2">
+            <i class="fas fa-ban text-[12.5px]"></i> Batalkan Transaksi
+        </button>
+        <% } %>
+
+        <!-- Countdown redirect setelah sukses -->
+        <div id="redirectCountdown" class="hidden w-full text-center mt-3">
+            <p class="text-[12.5px] text-gray-700 font-medium">
+                <i class="fas fa-spinner fa-pulse mr-2 text-brand-600"></i>
+                Mengalihkan ke merchant dalam <span id="countdownRedirectTimer" class="font-medium text-brand-700">15</span> detik...
+            </p>
+            <button onclick="window.open(callbackUrl, '_blank')" class="text-[12.5px] text-brand-600 underline mt-1 hover:text-brand-800 font-medium">
+                Klik di sini jika tidak dialihkan
+            </button>
+        </div>
+
+        <!-- Tombol Kembali ke Merchant (jika transaksi selesai & callback valid) -->
+        <% if (!isPending && isValidCallback) { %>
+        <a href="<%= callbackUrl %>" target="_blank" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2 mt-3 shadow-sm">
+            <i class="fas fa-arrow-left text-[12.5px]"></i> Kembali ke Merchant
+        </a>
+        <% } %>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="px-5 mt-4 py-3 text-center text-[12.5px] font-medium text-gray-700">
+        &copy; <%= new Date().getFullYear() %>
+        <a href="/dashboard" class="text-brand-600 hover:underline"><%= settings.name %></a>.
+        All rights reserved.
+    </div>
+
+    <script>
+        const invoiceId = '<%= invoice._id %>';
+        const currentStatus = '<%= status %>';
+        const callbackUrl = '<%= callbackUrl %>';
+        const isValidCallback = <%= isValidCallback ? 'true' : 'false' %>;
+
+        async function fetchStatus() {
+            try {
+                const res = await fetch('/payment/status/' + invoiceId);
+                const data = await res.json();
+                return data.status;
+            } catch (err) {
+                console.error(err);
+                return null;
+            }
+        }
+
+        function startRedirectCountdown(seconds) {
+            const timerEl = document.getElementById('countdownRedirectTimer');
+            let remaining = seconds;
+            timerEl.textContent = remaining;
+            const interval = setInterval(() => {
+                remaining--;
+                timerEl.textContent = remaining;
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    window.open(callbackUrl, '_blank');
+                }
+            }, 1000);
+        }
+
+        function handlePaymentSuccess() {
+            // Sembunyikan QR code jika ada
+            const qrWrapper = document.getElementById('qrCodeWrapper');
+            if (qrWrapper) qrWrapper.classList.add('hidden');
+
+            // Tampilkan icon sukses
+            const successIcon = document.getElementById('successIcon');
+            if (successIcon) successIcon.classList.remove('hidden');
+
+            // Sembunyikan countdown QRIS
+            const qrisCountdown = document.getElementById('countdownContainer');
+            if (qrisCountdown) qrisCountdown.classList.add('hidden');
+
+            // Ubah status di tabel
+            const statusCell = document.getElementById('statusCell');
+            if (statusCell) {
+                statusCell.innerHTML =
+                    '<span class="text-brand-600"><i class="fas fa-check-circle text-[12.5px] mr-0.3"></i> Pembayaran Berhasil</span>';
+            }
+
+            // Tampilkan baris "Dibayar Pada"
+            const paidDateRow = document.getElementById('paidDateRow');
+            const paidDateCell = document.getElementById('paidDateCell');
+            if (paidDateRow && paidDateCell) {
+                paidDateRow.classList.remove('hidden');
+                paidDateCell.textContent = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
+            }
+
+            // Sembunyikan tombol "Saya Sudah Bayar"
+            const payButton = document.getElementById('payButton');
+            if (payButton) payButton.classList.add('hidden');
+            const cancelBtnPaid = document.getElementById('cancelButton');
+            if (cancelBtnPaid) cancelBtnPaid.classList.add('hidden');
+
+            // Tampilkan countdown redirect jika ada callback valid
+            if (isValidCallback) {
+                const redirectDiv = document.getElementById('redirectCountdown');
+                if (redirectDiv) redirectDiv.classList.remove('hidden');
+                startRedirectCountdown(15);
+            } else {
+                setTimeout(() => window.location.reload(), 2000);
+            }
+
+            // Hentikan polling
+            if (window.pollInterval) clearInterval(window.pollInterval);
+        }
+
+        function handleExpired() {
+            // Sembunyikan QR dan countdown
+            const qrWrapper = document.getElementById('qrCodeWrapper');
+            if (qrWrapper) qrWrapper.classList.add('hidden');
+            const countdownContainer = document.getElementById('countdownContainer');
+            if (countdownContainer) countdownContainer.classList.add('hidden');
+            const payButton = document.getElementById('payButton');
+            if (payButton) payButton.classList.add('hidden');
+            const cancelBtnExp = document.getElementById('cancelButton');
+            if (cancelBtnExp) cancelBtnExp.classList.add('hidden');
+
+            // Tampilkan icon expired
+            const expiredIcon = document.getElementById('expiredIcon');
+            if (expiredIcon) expiredIcon.classList.remove('hidden');
+
+            // Ubah status di tabel
+            const statusCell = document.getElementById('statusCell');
+            if (statusCell) {
+                statusCell.innerHTML = '<span class="text-[#dc2626]"><i class="fas fa-times-circle text-[12.5px] mr-0.3"></i> Pembayaran Kedaluwarsa</span>';
+            }
+
+            // Hentikan polling dan countdown
+            if (window.pollInterval) clearInterval(window.pollInterval);
+            if (window.countdownInterval) clearInterval(window.countdownInterval);
+        }
+
+        function handleCancelled() {
+            const qrWrapper = document.getElementById('qrCodeWrapper');
+            if (qrWrapper) qrWrapper.classList.add('hidden');
+            const countdownContainer = document.getElementById('countdownContainer');
+            if (countdownContainer) countdownContainer.classList.add('hidden');
+            const payButton = document.getElementById('payButton');
+            if (payButton) payButton.classList.add('hidden');
+            const cancelButton = document.getElementById('cancelButton');
+            if (cancelButton) cancelButton.classList.add('hidden');
+
+            const cancelledIcon = document.getElementById('cancelledIcon');
+            if (cancelledIcon) cancelledIcon.classList.remove('hidden');
+
+            const statusCell = document.getElementById('statusCell');
+            if (statusCell) {
+                statusCell.innerHTML = '<span class="text-slate-600"><i class="fas fa-ban text-[12.5px] mr-0.3"></i> Transaksi Dibatalkan</span>';
+            }
+
+            if (window.pollInterval) clearInterval(window.pollInterval);
+            if (window.countdownInterval) clearInterval(window.countdownInterval);
+        }
+
+        async function cancelPayment() {
+            if (!confirm('Batalkan transaksi ini? QR yang sudah dibuat tidak bisa dipakai lagi.')) return;
+            const btn = document.getElementById('cancelButton');
+            if (btn) btn.disabled = true;
+            try {
+                const res = await fetch('/payment/cancel/' + invoiceId, { method: 'POST' });
+                const data = await res.json();
+                if (data.success) {
+                    handleCancelled();
+                    return;
+                }
+                alert(data.error || 'Gagal membatalkan transaksi');
+                if (data.status === 'paid') handlePaymentSuccess();
+                else if (data.status === 'expired') handleExpired();
+                else if (data.status === 'cancelled') handleCancelled();
+            } catch (err) {
+                console.error(err);
+                alert('Terjadi kesalahan, coba lagi');
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        async function checkPaymentStatus() {
+            const newStatus = await fetchStatus();
+            if (newStatus === 'pending') {
+                alert('Pembayaran Belum Terdeteksi');
+                return;
+            }
+
+            if (newStatus === 'paid') {
+                handlePaymentSuccess();
+                return;
+            }
+
+            if (newStatus === 'expired') {
+                handleExpired();
+                return;
+            }
+
+            if (newStatus === 'cancelled') {
+                handleCancelled();
+                return;
+            }
+
+            // Status lainnya, reload halaman (seharusnya tidak terjadi)
+            window.location.reload();
+        }
+
+        if (currentStatus === 'pending') {
+            window.pollInterval = setInterval(async () => {
+                const newStatus = await fetchStatus();
+                if (newStatus === 'paid') {
+                    clearInterval(window.pollInterval);
+                    handlePaymentSuccess();
+                } else if (newStatus === 'expired') {
+                    clearInterval(window.pollInterval);
+                    handleExpired();
+                } else if (newStatus === 'cancelled') {
+                    clearInterval(window.pollInterval);
+                    handleCancelled();
+                }
+            }, 5000);
+        }
+
+        <% if (isPending && invoice.expiredAt) { %>
+        const expiredAt = new Date("<%= invoice.expiredAt.toISOString() %>").getTime();
+        const timerEl = document.getElementById('countdownTimer');
+        const container = document.getElementById('countdownContainer');
+
+        function updateCountdown() {
+            const now = Date.now();
+            const diff = expiredAt - now;
+
+            if (diff <= 0) {
+                timerEl.textContent = '00:00:00';
+                container.innerHTML = '<span class="text-[#dc2626] font-medium">⏰ Waktu pembayaran telah habis</span>';
+                clearInterval(window.countdownInterval);
+                handleExpired();
+                return;
+            }
+
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            timerEl.textContent =
+                String(hours).padStart(2, '0') + ':' +
+                String(minutes).padStart(2, '0') + ':' +
+                String(seconds).padStart(2, '0');
+        }
+
+        updateCountdown();
+        window.countdownInterval = setInterval(updateCountdown, 1000);
+        <% } %>
+    </script>
+</body>
+</html>

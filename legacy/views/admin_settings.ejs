@@ -1,0 +1,1490 @@
+<%- include('partials/header', { title: 'Settings' }) %>
+
+<!-- Library jsQR untuk decode QR dari gambar (client-side) -->
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  .custom-scroll::-webkit-scrollbar { width: 2px; height: 2px; }
+  .custom-scroll::-webkit-scrollbar-track { background: transparent; margin-top: 10px; margin-bottom: 10px; }
+  .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+  .custom-scroll:hover::-webkit-scrollbar-thumb { background-color: #94a3b8; }
+</style>
+
+<div class="px-4 pt-4 pb-6 max-w-[480px] md:max-w-lg mx-auto">
+
+  <%- include('partials/page_head', { title: 'Pengaturan', subtitle: 'Kelola konfigurasi gateway, pembayaran, dan sistem', icon: 'fa-gear', color: 'slate' }) %>
+
+  <!-- Navigasi cepat -->
+  <div class="flex gap-2 overflow-x-auto custom-scroll pb-2 mb-3 -mx-1 px-1">
+    <a href="#set-0" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 shadow-sm"><i class="fas fa-globe text-[11px] text-brand-500"></i>Pengaturan Umum</a><a href="#set-1" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-emerald-600 shadow-sm"><i class="fas fa-plug text-[11px] text-emerald-500"></i>Payment Gateway</a><a href="#set-2" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-amber-600 shadow-sm"><i class="fas fa-money-bill-wave text-[11px] text-amber-500"></i>Aturan Finansial</a><a href="#set-3" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-violet-600 shadow-sm"><i class="fas fa-wallet text-[11px] text-violet-500"></i>Metode Withdraw Manual</a><a href="#set-4" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-sky-600 shadow-sm"><i class="fas fa-link text-[11px] text-sky-500"></i>Orderkuota H2H — Kredensial</a><a href="#set-5" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-rose-600 shadow-sm"><i class="fas fa-bolt text-[11px] text-rose-500"></i>Metode Withdraw Instan</a><a href="#set-6" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-teal-600 shadow-sm"><i class="fas fa-cogs text-[11px] text-teal-500"></i>Sistem Otomatisasi</a><a href="#set-7" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-orange-600 shadow-sm"><i class="fas fa-bullhorn text-[11px] text-orange-500"></i>Pop Up Channel Admin</a><a href="#set-8" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 shadow-sm"><i class="fas fa-hourglass-half text-[11px] text-brand-500"></i>Saldo Tertunda</a><a href="#set-9" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-emerald-600 shadow-sm"><i class="fas fa-calendar-xmark text-[11px] text-emerald-500"></i>Libur Penarikan</a><a href="#set-10" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-amber-600 shadow-sm"><i class="fas fa-gear text-[11px] text-amber-500"></i>Telegram Bot</a><a href="#set-11" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-violet-600 shadow-sm"><i class="fas fa-envelope text-[11px] text-violet-500"></i>Konfigurasi SMTP Email</a>
+  </div>
+
+
+  <!-- Notifikasi lokal (dinamis via JS) -->
+  <div id="localNotif" class="hidden bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-[2px] mb-4 text-xs font-medium flex items-center gap-3">
+    <div class="w-7 h-7 rounded-[2px] bg-green-100 flex items-center justify-center shrink-0"><i class="fas fa-check-circle text-xs"></i></div>
+    <p id="localNotifMessage"></p>
+    <button type="button" onclick="this.parentElement.classList.add('hidden')" class="ml-auto text-gray-400 hover:text-gray-600">&times;</button>
+  </div>
+
+  <!-- Alert Success dari server -->
+  <%- include('partials/toast') %>
+  
+  <!-- Alert Error dari server -->
+
+  <form method="POST" action="/admin/settings" enctype="multipart/form-data" id="mainSettingsForm">
+    <!-- JSON withdrawMethods akan diisi oleh JavaScript -->
+    <input type="hidden" name="withdrawMethodsJson" id="withdrawMethodsJsonInput" value="<%= JSON.stringify(settings.withdrawMethods || []) %>">
+    <!-- JSON instantWithdrawMethods -->
+    <input type="hidden" name="instantWithdrawMethodsJson" id="instantWithdrawMethodsJsonInput" value="<%= JSON.stringify(settings.instantWithdrawMethods || []) %>">
+
+    <!-- ===================== PENGATURAN UMUM ===================== -->
+    <div id="set-0" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center shrink-0"><i class="fas fa-globe text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Pengaturan Umum</h2>
+      </div>
+      <div class="flex flex-col gap-3">
+        <!-- Nama Gateway -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Nama Gateway</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="name" type="text" value="<%= settings.name %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="Nama Gateway">
+          </div>
+        </div>
+        <!-- WhatsApp Channel -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Channel Telegram</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="channelInformation" type="url" value="<%= settings.channelInformation %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="https://...">
+          </div>
+        </div>
+        <!-- Contact Developer -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Contact Developer</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="contactDeveloper" type="url" value="<%= settings.contactDeveloper %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="https://...">
+          </div>
+        </div>        
+        <!-- Judul Landing Page -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Judul Landing Page</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="title" type="text" value="<%= settings.title %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="Judul landing page">
+          </div>
+        </div>
+        <!-- Deskripsi Landing Page -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Deskripsi Landing Page</label>
+          <textarea name="description" rows="3" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] p-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 resize-none" placeholder="Deskripsi singkat..."><%= settings.description %></textarea>
+        </div>
+        <!-- ===== UPLOAD LOGO ===== -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Logo (Upload Gambar)</label>
+          <div class="flex items-center gap-3">
+            <label class="bg-gray-50 border border-[#dddddd] rounded-[2px] px-4 py-3 text-xs font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-all inline-flex items-center">
+              <i class="fas fa-upload mr-2"></i> Pilih File
+              <input type="file" name="logo" accept="image/*" id="logoInput" class="hidden">
+            </label>
+            <span id="logoFileName" class="text-xs text-gray-500">Tidak ada file dipilih</span>
+          </div>
+          <input type="hidden" name="existingLogoUrl" value="<%= settings.logoUrl || '' %>">
+          <div id="logoPreview" class="mt-2 <%= settings.logoUrl ? '' : 'hidden' %>">
+            <img src="<%= settings.logoUrl %>" class="h-12 w-auto object-cover" alt="Logo Preview">
+          </div>
+          <p class="text-[10px] text-gray-400 mt-1">Format: PNG, JPG, GIF. Maks 2MB.</p>
+        </div>
+      </div>
+
+      <!-- Tombol simpan khusus card ini -->
+      <div class="flex justify-end mt-5 pt-4 border-t border-gray-100">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan Pengaturan Umum
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== PAYMENT GATEWAY (PILIH PROVIDER) ===================== -->
+    <div id="set-1" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0"><i class="fas fa-plug text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Payment Gateway</h2>
+      </div>
+
+      <!-- Pilihan Gateway -->
+      <div class="mb-5">
+        <label class="block text-xs font-medium text-gray-700 mb-3">Pilih Provider Integrasi</label>
+        <div class="grid grid-cols-2 gap-3">
+          <label class="relative flex flex-col items-center gap-3 p-4 rounded-[2px] border-2 cursor-pointer transition-all duration-200"
+                 id="label-gopaymerchant">
+            <input type="radio" name="paymentGateway" value="gopaymerchant" class="peer hidden"
+                   <%= settings.paymentGateway === 'gopaymerchant' ? 'checked' : '' %>>
+            <div class="w-12 h-12 rounded-[2px] overflow-hidden shrink-0">
+              <img src="https://i.ibb.co.com/VYL8rKdc/IMG-20260603-WA0001.jpg" alt="GoPay Merchant" class="w-full h-full object-cover">
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-gray-800">Gopay Merchant</p>
+            </div>
+            <div class="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-green-500 peer-checked:bg-green-500 transition-all">
+              <div class="w-2.5 h-2.5 rounded-full bg-white hidden peer-checked:block"></div>
+            </div>
+          </label>
+
+          <label class="relative flex flex-col items-center gap-3 p-4 rounded-[2px] border-2 cursor-pointer transition-all duration-200"
+                 id="label-pakasir">
+            <input type="radio" name="paymentGateway" value="pakasir" class="peer hidden"
+                   <%= settings.paymentGateway === 'pakasir' ? 'checked' : '' %>>
+            <div class="w-12 h-12 rounded-[2px] overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center text-gray-400">
+              <img src="https://i.ibb.co/1tZpWvM9/img-1791828609586.jpg" alt="Pakasir" class="w-full h-full object-cover" onerror="this.style.display='none'">
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-gray-800">Pakasir</p>
+              <p class="text-[10px] text-gray-400 text-center">Manual only</p>
+            </div>
+            <div class="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all">
+              <div class="w-2.5 h-2.5 rounded-full bg-white hidden peer-checked:block"></div>
+            </div>
+          </label>
+
+          <label class="relative flex flex-col items-center gap-3 p-4 rounded-[2px] border-2 cursor-pointer transition-all duration-200"
+                 id="label-xendit">
+            <input type="radio" name="paymentGateway" value="xendit" class="peer hidden"
+                   <%= settings.paymentGateway === 'xendit' ? 'checked' : '' %>>
+            <div class="w-12 h-12 rounded-[2px] overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center text-gray-400">
+              <img src="https://i.ibb.co/nqZqN4mZ/img-1791828623919.jpg" alt="Xendit" class="w-full h-full object-cover" onerror="this.style.display='none'">
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-gray-800">Xendit</p>
+              <p class="text-[10px] text-gray-400 text-center">Withdraw otomatis</p>
+            </div>
+            <div class="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all">
+              <div class="w-2.5 h-2.5 rounded-full bg-white hidden peer-checked:block"></div>
+            </div>
+          </label>
+
+          <label class="relative flex flex-col items-center gap-3 p-4 rounded-[2px] border-2 cursor-pointer transition-all duration-200"
+                 id="label-midtrans">
+            <input type="radio" name="paymentGateway" value="midtrans" class="peer hidden"
+                   <%= settings.paymentGateway === 'midtrans' ? 'checked' : '' %>>
+            <div class="w-12 h-12 rounded-[2px] overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center text-gray-400">
+              <img src="https://i.ibb.co/twCwL2mL/img-1791828648245.jpg" alt="Midtrans" class="w-full h-full object-cover" onerror="this.style.display='none'">
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-gray-800">Midtrans</p>
+              <p class="text-[10px] text-gray-400 text-center">Manual only</p>
+            </div>
+            <div class="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all">
+              <div class="w-2.5 h-2.5 rounded-full bg-white hidden peer-checked:block"></div>
+            </div>
+          </label>
+
+          <label class="relative flex flex-col items-center gap-3 p-4 rounded-[2px] border-2 cursor-pointer transition-all duration-200"
+                 id="label-casaku">
+            <input type="radio" name="paymentGateway" value="casaku" class="peer hidden"
+                   <%= settings.paymentGateway === 'casaku' ? 'checked' : '' %>>
+            <div class="w-12 h-12 rounded-[2px] overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center text-gray-400">
+              <img src="https://i.ibb.co/1tmbLvmf/img-1791828785471.jpg" alt="Casaku" class="w-full h-full object-cover" onerror="this.style.display='none'">
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-gray-800">Casaku</p>
+              <p class="text-[10px] text-gray-400 text-center">Manual only</p>
+            </div>
+            <div class="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all">
+              <div class="w-2.5 h-2.5 rounded-full bg-white hidden peer-checked:block"></div>
+            </div>
+          </label>
+
+          <label class="relative flex flex-col items-center gap-3 p-4 rounded-[2px] border-2 cursor-pointer transition-all duration-200"
+                 id="label-klikqris">
+            <input type="radio" name="paymentGateway" value="klikqris" class="peer hidden"
+                   <%= settings.paymentGateway === 'klikqris' ? 'checked' : '' %>>
+            <div class="w-12 h-12 rounded-[2px] overflow-hidden shrink-0 bg-gray-100 flex items-center justify-center text-gray-400">
+              <img src="https://i.ibb.co/GQmTNYR0/img-1791828765160.jpg" alt="KlikQRIS" class="w-full h-full object-cover" onerror="this.style.display='none'">
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-gray-800">KlikQRIS</p>
+              <p class="text-[10px] text-gray-400 text-center">Manual only</p>
+            </div>
+            <div class="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all">
+              <div class="w-2.5 h-2.5 rounded-full bg-white hidden peer-checked:block"></div>
+            </div>
+          </label>
+
+          <label class="relative flex flex-col items-center gap-3 p-4 rounded-[2px] border-2 cursor-pointer transition-all duration-200"
+                 id="label-agw">
+            <input type="radio" name="paymentGateway" value="agw" class="peer hidden"
+                   <%= settings.paymentGateway === 'agw' ? 'checked' : '' %>>
+            <div class="w-12 h-12 rounded-[2px] overflow-hidden shrink-0 bg-slate-900 flex items-center justify-center text-white">
+              <i class="fas fa-qrcode text-lg"></i>
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-gray-800">Admin Gateway</p>
+              <p class="text-[10px] text-gray-400 text-center">QRIS via SMP Payment</p>
+            </div>
+            <div class="absolute top-2 right-2 w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center peer-checked:border-accent-500 peer-checked:bg-accent-500 transition-all">
+              <div class="w-2.5 h-2.5 rounded-full bg-white hidden peer-checked:block"></div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Konfigurasi Gopay Merchant -->
+      <div id="config-gopaymerchant" class="<%= settings.paymentGateway !== 'gopaymerchant' ? 'hidden' : '' %>">
+        <div class="flex items-center gap-3 mb-3">
+          <img src="https://i.ibb.co.com/VYL8rKdc/IMG-20260603-WA0001.jpg" alt="GoPay Merchant" class="w-8 h-8 rounded-[2px] object-cover border border-gray-200">
+          <div>
+            <p class="text-xs font-medium text-gray-800">Gopay Merchant</p>
+            <p class="text-[10px] text-gray-400">Integrasi otomatis dengan API Gopay Merchant</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Domain Rest API</label>
+            <input name="gopayDomain" type="text" value="<%= settings.gopayDomain || 'gomerch.vercel.app' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="api.example.com">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Token Gopay Merchant</label>
+            <textarea name="gopayToken" rows="3" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] p-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 resize-none" placeholder="Token dari Gopay Merchant"><%= settings.gopayToken %></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Refresh Token Gopay Merchant</label>
+            <textarea name="gopayRefreshToken" rows="3" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] p-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 resize-none" placeholder="Refresh token dari Gopay Merchant"><%= settings.gopayRefreshToken || '' %></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">String QR Gopay Merchant</label>
+            <!-- Upload Gambar QR -->
+            <div class="mb-3">
+              <label class="bg-gray-50 border border-[#dddddd] rounded-[2px] px-4 py-2 text-xs font-medium text-gray-700 cursor-pointer hover:bg-gray-100 transition-all inline-flex items-center">
+                <i class="fas fa-upload mr-2"></i> Upload Gambar QR
+                <input type="file" id="qrImageInput" accept="image/*" class="hidden">
+              </label>
+              <span id="qrFileName" class="text-xs text-gray-400 ml-2">Tidak ada file</span>
+            </div>
+            <textarea name="gopayStaticQr" id="gopayStaticQr" rows="3" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] p-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 resize-none" placeholder="000201010211..."><%= settings.gopayStaticQr || '' %></textarea>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Konfigurasi Pakasir -->
+      <div id="config-pakasir" class="<%= settings.paymentGateway !== 'pakasir' ? 'hidden' : '' %>">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-[2px] bg-gray-100 border border-gray-200 shrink-0"></div>
+          <div>
+            <p class="text-xs font-medium text-gray-800">Pakasir</p>
+            <p class="text-[10px] text-gray-400">Withdraw otomatis dimatikan untuk gateway ini (manual only)</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Project Slug</label>
+            <input name="pakasirSlug" type="text" value="<%= settings.pakasirSlug || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="nama-project-pakasir">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">API Key</label>
+            <input name="pakasirApiKey" type="text" value="<%= settings.pakasirApiKey || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="API Key Pakasir">
+          </div>
+        </div>
+      </div>
+
+      <!-- Konfigurasi Xendit -->
+      <div id="config-xendit" class="<%= settings.paymentGateway !== 'xendit' ? 'hidden' : '' %>">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-[2px] bg-gray-100 border border-gray-200 shrink-0"></div>
+          <div>
+            <p class="text-xs font-medium text-gray-800">Xendit</p>
+            <p class="text-[10px] text-gray-400">Withdraw instan otomatis via Xendit Payout API dinyalakan untuk gateway ini</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Secret Key</label>
+            <input name="xenditSecretKey" type="text" value="<%= settings.xenditSecretKey || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="xnd_...">
+          </div>
+          <p class="text-[10px] text-gray-400">Channel penarikan otomatis diatur di kartu "Metode Withdraw Instan" di bawah — isi kolom Kode dengan channel code Xendit (contoh: ID_DANA, ID_OVO, ID_GOPAY, ID_SHOPEEPAY).</p>
+        </div>
+      </div>
+
+      <!-- Konfigurasi Midtrans -->
+      <div id="config-midtrans" class="<%= settings.paymentGateway !== 'midtrans' ? 'hidden' : '' %>">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-[2px] bg-gray-100 border border-gray-200 shrink-0"></div>
+          <div>
+            <p class="text-xs font-medium text-gray-800">Midtrans</p>
+            <p class="text-[10px] text-gray-400">Withdraw otomatis dimatikan untuk gateway ini (manual only)</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Server Key</label>
+            <input name="midtransServerKey" type="text" value="<%= settings.midtransServerKey || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="SB-Mid-server-...">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Client Key</label>
+            <input name="midtransClientKey" type="text" value="<%= settings.midtransClientKey || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="SB-Mid-client-...">
+          </div>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="midtransProduction" <%= settings.midtransProduction ? 'checked' : '' %> class="w-4 h-4">
+            <span class="text-xs font-medium text-gray-700">Mode Production (nonaktifkan untuk Sandbox)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Konfigurasi Casaku -->
+      <div id="config-casaku" class="<%= settings.paymentGateway !== 'casaku' ? 'hidden' : '' %>">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-[2px] bg-gray-100 border border-gray-200 shrink-0"></div>
+          <div>
+            <p class="text-xs font-medium text-gray-800">Casaku</p>
+            <p class="text-[10px] text-gray-400">Withdraw otomatis dimatikan untuk gateway ini (manual only)</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">License Key</label>
+            <input name="casakuLicenseKey" type="text" value="<%= settings.casakuLicenseKey || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="License key Casaku">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">QR ID Merchant (UUID)</label>
+            <input name="casakuQrId" type="text" value="<%= settings.casakuQrId || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="986b2a0a-5c95-4177-9800-02d84a35338e">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Package IDs (pisahkan dengan koma)</label>
+            <input name="casakuPackageIds" type="text" value="<%= settings.casakuPackageIds || 'id.dana' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="id.dana,com.shopee.id">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Prefix ID Transaksi (maks 8 karakter)</label>
+            <input name="casakuPrefix" type="text" value="<%= settings.casakuPrefix || 'CSK' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="CSK">
+          </div>
+        </div>
+      </div>
+
+      <!-- Konfigurasi KlikQRIS -->
+      <div id="config-klikqris" class="<%= settings.paymentGateway !== 'klikqris' ? 'hidden' : '' %>">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-[2px] bg-gray-100 border border-gray-200 shrink-0"></div>
+          <div>
+            <p class="text-xs font-medium text-gray-800">KlikQRIS</p>
+            <p class="text-[10px] text-gray-400">Withdraw otomatis dimatikan untuk gateway ini (manual only)</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">API Key (x-api-key)</label>
+            <input name="klikqrisApiKey" type="text" value="<%= settings.klikqrisApiKey || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="API Key KlikQRIS">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">ID Merchant</label>
+            <input name="klikqrisMerchantId" type="text" value="<%= settings.klikqrisMerchantId || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="ID Merchant KlikQRIS">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Callback URL (opsional)</label>
+            <input name="klikqrisCallbackUrl" type="text" value="<%= settings.klikqrisCallbackUrl || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="Kosongkan untuk pakai webhook global KlikQRIS">
+          </div>
+        </div>
+      </div>
+
+      <!-- Konfigurasi Admin Gateway (AGW) -->
+      <div id="config-agw" class="<%= settings.paymentGateway !== 'agw' ? 'hidden' : '' %>">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-8 h-8 rounded-[2px] bg-slate-900 text-white shrink-0 flex items-center justify-center"><i class="fas fa-qrcode text-xs"></i></div>
+          <div>
+            <p class="text-xs font-medium text-gray-800">Admin Gateway (SMP Payment)</p>
+            <p class="text-[10px] text-gray-400">Deposit user &amp; API developer (apikey) memakai gateway ini. Withdraw otomatis lewat H2H Orderkuota.</p>
+          </div>
+        </div>
+        <div class="flex flex-col gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Base URL</label>
+            <input name="agwBaseUrl" type="text" value="<%= settings.agwBaseUrl || 'https://www.tokonokosarta.my.id/api/agw' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="https://domain-gateway/api/agw">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">API Key</label>
+            <input name="agwApiKey" type="text" value="<%= settings.agwApiKey || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="agw_live_...">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">API Secret (opsional, jika tanda tangan HMAC aktif)</label>
+            <input name="agwApiSecret" type="text" value="<%= settings.agwApiSecret || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="agw_sec_...">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Webhook Secret</label>
+            <input name="agwWebhookSecret" type="text" value="<%= settings.agwWebhookSecret || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="whsec_...">
+          </div>
+          <div class="bg-slate-50 border border-slate-200 rounded-[2px] p-3">
+            <p class="text-[10px] text-gray-500 mb-1">Daftarkan URL ini sebagai webhook di panel Admin Gateway (event invoice.paid):</p>
+            <p id="agwWebhookUrl" class="text-xs font-semibold text-gray-800 break-all">/agw/webhook</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tombol simpan khusus card ini -->
+      <div class="flex justify-end mt-5 pt-4 border-t border-gray-100">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan Gateway
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== ATURAN FINANSIAL (DENGAN RENTANG FEE) ===================== -->
+    <div id="set-2" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0"><i class="fas fa-money-bill-wave text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Aturan Finansial</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <!-- Kolom Kiri: Minimal Deposit & Minimal Fee Random (Start) -->
+        <div class="space-y-3">
+          <!-- Minimal Deposit -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Minimal Deposit</label>
+            <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+              <div class="pl-2 text-gray-400 text-xs font-medium">Rp</div>
+              <input name="minDeposit" type="number" value="<%= (typeof settings.minDeposit === 'number' && !isNaN(settings.minDeposit)) ? settings.minDeposit : 1000 %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" required>
+            </div>
+          </div>
+          <!-- Minimal Fee Random (Start) -->
+          <div>
+            <label class="block text-xs font-medium text-gray-700 mb-2">Minimal Fee Random (Start)</label>
+            <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+              <div class="pl-2 text-gray-400 text-xs font-medium">Rp</div>
+              <input name="minFee" type="number" value="<%= (typeof settings.minFee === 'number' && !isNaN(settings.minFee)) ? settings.minFee : 0 %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full">
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1">Nilai awal biaya acak, default 0.</p>
+          </div>
+        </div>
+
+        <!-- Kolom Kanan: Maksimal Fee Random (Max) -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Maksimal Fee Random (Max)</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <div class="pl-2 text-gray-400 text-xs font-medium">Rp</div>
+            <input name="maxFee" type="number" value="<%= (typeof settings.maxFee === 'number' && !isNaN(settings.maxFee)) ? settings.maxFee : 500 %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" required>
+          </div>
+          <p class="text-[10px] text-gray-400 mt-1">Batas atas biaya acak.</p>
+        </div>
+      </div>
+      <!-- Tombol simpan -->
+      <div class="flex justify-end mt-5 pt-4 border-t border-gray-100">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan Aturan Finansial
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== METODE WITHDRAW (MANUAL) ===================== -->
+    <div id="set-3" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center shrink-0"><i class="fas fa-wallet text-[13px]"></i></span>
+          <h2 class="text-[15px] font-semibold text-slate-800">Metode Withdraw Manual</h2>
+        </div>
+        <button type="button" id="btnAddMethod" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex items-center gap-2">
+          <i class="fas fa-plus text-xs"></i>Metode
+        </button>
+      </div>
+      <div id="withdrawMethodList" class="space-y-2 mb-3"></div>
+    </div>
+    
+    <!-- ===================== ORDERKUOTA H2H — KREDENSIAL ===================== -->
+    <div id="set-4" class="<%= settings.paymentGateway === 'xendit' ? 'hidden ' : '' %>bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0"><i class="fas fa-link text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Orderkuota H2H — Kredensial</h2>
+      </div>
+      <div class="mb-4 p-3 rounded-[2px] bg-amber-50 border border-amber-200 text-[11px] text-amber-800 leading-relaxed">
+        <i class="fas fa-exclamation-triangle mr-1"></i>
+        Gateway aktif tidak punya sistem penarikan sendiri, jadi withdraw instan dikirim lewat H2H Orderkuota.
+        <b>Silakan isi saldo dulu di Orderkuota</b> agar pengguna dapat melakukan withdraw instan.
+      </div>
+      <div class="flex flex-col gap-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">ID Merchant</label>
+          <input name="h2hIdMerchant" type="text" value="<%= settings.h2hIdMerchant || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="ID Merchant H2H">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">PIN</label>
+          <input name="h2hPin" type="text" value="<%= settings.h2hPin || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="PIN H2H">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Password</label>
+          <input name="h2hPassword" type="text" value="<%= settings.h2hPassword || '' %>" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="Password H2H">
+        </div>
+      </div>
+      <div class="flex justify-end mt-5 pt-4 border-t border-gray-100">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan Kredensial H2H
+        </button>
+      </div>
+    </div>    
+
+    <!-- ===================== METODE WITHDRAW INSTAN (H2H) ===================== -->
+    <div id="set-5" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+        <div class="flex items-center gap-2">
+          <span class="w-8 h-8 rounded-lg bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shrink-0"><i class="fas fa-bolt text-[13px]"></i></span>
+          <h2 class="text-[15px] font-semibold text-slate-800">Metode Withdraw Instan</h2>
+        </div>
+        <button type="button" id="btnAddInstantMethod" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex items-center gap-2">
+          <i class="fas fa-plus text-xs"></i>Metode Instan
+        </button>
+      </div>
+      <p class="text-[10px] text-gray-400 mb-3">Dipakai untuk withdraw otomatis lewat H2H Orderkuota (gateway Pakasir/Midtrans/Casaku/KlikQRIS/Gopay Merchant) maupun Xendit Payout (saat gateway Xendit aktif). Kode produk mengikuti provider yang sedang aktif. Otomatis nonaktif saat hari libur penarikan.</p>
+      <div id="instantMethodList" class="space-y-2 mb-3"></div>
+    </div>
+
+    <!-- ===================== SISTEM OTOMATISASI ===================== -->
+    <div id="set-6" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 border border-teal-100 flex items-center justify-center shrink-0"><i class="fas fa-cogs text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Sistem Otomatisasi</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <!-- Interval Cek Mutasi -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Interval Cek Mutasi (Detik)</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="checkInterval" type="number" value="<%= (typeof settings.checkInterval === 'number' && !isNaN(settings.checkInterval)) ? settings.checkInterval : 20 %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" required>
+          </div>
+        </div>
+        <!-- Kedaluwarsa QRIS -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Kedaluwarsa QRIS (Menit)</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="qrisExpiredMinutes" type="number" value="<%= (typeof settings.qrisExpiredMinutes === 'number' && !isNaN(settings.qrisExpiredMinutes)) ? settings.qrisExpiredMinutes : 30 %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" required>
+          </div>
+        </div>
+      </div>
+      <!-- Tombol simpan khusus card ini -->
+      <div class="flex justify-end mt-5 pt-4 border-t border-gray-100">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan Otomatisasi
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== POPUP SOSIAL ADMIN ===================== -->
+    <div id="set-7" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 border border-orange-100 flex items-center justify-center shrink-0"><i class="fas fa-bullhorn text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Pop Up Channel Admin</h2>
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer mb-3">
+        <input type="checkbox" name="socialPopupEnabled" <%= settings.socialPopupEnabled !== false ? 'checked' : '' %> class="w-4 h-4">
+        <span class="text-xs font-medium text-gray-700">Tampilkan pop up setelah user login / daftar</span>
+      </label>
+      <p class="text-[10px] text-gray-400 mb-3">Kolom yang dikosongkan tidak akan tampil di pop up. Kalau semua kosong, pop up tidak muncul. Awalan https:// boleh dikosongkan, akan ditambahkan otomatis.</p>
+      <% if (!settings.socialWhatsappUrl && !settings.socialYoutubeUrl && !settings.socialTiktokUrl && !settings.socialInstagramUrl) { %>
+        <div class="flex items-start gap-2 bg-amber-50 border border-amber-200 text-amber-800 rounded-[2px] px-3 py-2 mb-3 text-[11px] font-medium">
+          <i class="fas fa-triangle-exclamation mt-0.5"></i>
+          <span>Belum ada link yang diisi, jadi pop up belum akan muncul di user. Isi minimal satu link lalu simpan.</span>
+        </div>
+      <% } %>
+      <div class="flex flex-col gap-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Channel WhatsApp Admin</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="socialWhatsappUrl" type="text" inputmode="url" autocapitalize="off" spellcheck="false" value="<%= settings.socialWhatsappUrl || '' %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="https://whatsapp.com/channel/...">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Channel YouTube Admin</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="socialYoutubeUrl" type="text" inputmode="url" autocapitalize="off" spellcheck="false" value="<%= settings.socialYoutubeUrl || '' %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="https://youtube.com/@...">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">TikTok Admin</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="socialTiktokUrl" type="text" inputmode="url" autocapitalize="off" spellcheck="false" value="<%= settings.socialTiktokUrl || '' %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="https://tiktok.com/@...">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Instagram Admin</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="socialInstagramUrl" type="text" inputmode="url" autocapitalize="off" spellcheck="false" value="<%= settings.socialInstagramUrl || '' %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="https://instagram.com/...">
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 pt-4 border-t border-gray-200">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan Pengaturan Pop Up
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== SALDO TERTUNDA ===================== -->
+    <div id="set-8" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center shrink-0"><i class="fas fa-hourglass-half text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Saldo Tertunda</h2>
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer mb-4">
+        <input type="checkbox" name="pendingBalanceEnabled" <%= settings.pendingBalanceEnabled ? 'checked' : '' %> class="w-4 h-4">
+        <span class="text-xs font-medium text-gray-700">Aktifkan saldo tertunda (deposit tidak langsung masuk saldo utama)</span>
+      </label>
+      <p class="text-[10px] text-gray-400 mb-3">Setiap deposit yang berhasil akan masuk ke saldo tertunda terlebih dahulu. Deposit yang masuk sebelum jam cutoff akan cair di jam pencairan hari yang sama; jika masuk setelah jam cutoff (terlalu dekat dengan jam pencairan), maka baru cair keesokan harinya di jam pencairan yang sama.</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Jam Cutoff (WIB, 0-23)</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="pendingBalanceCutoffHour" type="number" min="0" max="23" value="<%= (typeof settings.pendingBalanceCutoffHour === 'number' && !isNaN(settings.pendingBalanceCutoffHour)) ? settings.pendingBalanceCutoffHour : 9 %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" required>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Jam Pencairan (WIB, 0-23)</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="pendingBalanceReleaseHour" type="number" min="0" max="23" value="<%= (typeof settings.pendingBalanceReleaseHour === 'number' && !isNaN(settings.pendingBalanceReleaseHour)) ? settings.pendingBalanceReleaseHour : 12 %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" required>
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end mt-5 pt-4 border-t border-gray-100">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan Saldo Tertunda
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== LIBUR PENARIKAN ===================== -->
+    <div id="set-9" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0"><i class="fas fa-calendar-xmark text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Libur Penarikan</h2>
+      </div>
+      <label class="flex items-center gap-2 cursor-pointer mb-4">
+        <input type="checkbox" name="withdrawHolidayManualOnly" <%= settings.withdrawHolidayManualOnly ? 'checked' : '' %> class="w-4 h-4">
+        <span class="text-xs font-medium text-gray-700">Pada hari libur, matikan withdraw instan (paksa manual)</span>
+      </label>
+      <label class="block text-xs font-medium text-gray-700 mb-2">Hari Libur Penarikan Otomatis</label>
+      <% const hariList = [{v:0,l:'Minggu'},{v:1,l:'Senin'},{v:2,l:'Selasa'},{v:3,l:'Rabu'},{v:4,l:'Kamis'},{v:5,l:'Jumat'},{v:6,l:'Sabtu'}];
+         const activeHolidays = settings.withdrawHolidayDays || []; %>
+      <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+        <% hariList.forEach(h => { %>
+          <label class="flex items-center justify-center gap-1.5 bg-gray-50 border border-[#dddddd] rounded-[2px] px-2 py-2 cursor-pointer text-xs font-medium text-gray-700">
+            <input type="checkbox" name="withdrawHolidayDays" value="<%= h.v %>" <%= activeHolidays.includes(h.v) ? 'checked' : '' %> class="w-3.5 h-3.5">
+            <%= h.l %>
+          </label>
+        <% }) %>
+      </div>
+      <div class="flex justify-end mt-5 pt-4 border-t border-gray-100">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan Libur Penarikan
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== TELEGRAM BOT ===================== -->
+    <div id="set-10" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0"><i class="fab fa-telegram-plane text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Telegram Bot</h2>
+      </div>
+
+      <!-- Status Bot -->
+      <div class="flex items-center justify-between bg-gray-50 rounded-[2px] px-4 py-3 mb-3 border border-[#dddddd]">
+        <div class="flex items-center gap-1">
+          <div class="w-3 h-3 rounded-full <%= botStatus === 'Running' ? 'bg-green-500' : 'bg-red-500' %>"></div>
+          <span class="text-xs font-medium <%= botStatus === 'Running' ? 'text-green-600' : 'text-red-600' %>" id="botStatusText">
+            <%= botStatus %>
+          </span>
+        </div>
+        <div class="flex items-center gap-1">
+          <!-- Tombol Restart (hanya jika bot berjalan) -->
+          <% if (botStatus === 'Running') { %>
+          <button type="button" id="restartBotBtn"
+                  class="w-8 h-8 flex items-center justify-center rounded-[2px] text-xs text-white bg-yellow-500 hover:bg-yellow-600 shadow-sm transition-all"
+                  onclick="restartBot()" title="Restart Bot">
+            <i class="fas fa-sync-alt text-xs"></i>
+          </button>
+          <% } %>
+          <!-- Tombol Toggle (ikon saja) -->
+          <button type="button" id="toggleBotBtn"
+                  class="w-8 h-8 flex items-center justify-center rounded-[2px] text-xs text-white shadow-sm transition-all
+                  <%= botStatus === 'Running' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600' %>"
+                  onclick="toggleBot()" title="<%= botStatus === 'Running' ? 'Stop Bot' : 'Start Bot' %>">
+            <i class="fas <%= botStatus === 'Running' ? 'fa-power-off' : 'fa-play' %> text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <!-- Token Bot -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Token Bot</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="telegramBotToken" type="text" value="<%= settings.telegramBotToken %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="Masukkan token dari @BotFather">
+          </div>
+        </div>
+        <!-- Owner ID -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Owner ID (ID Telegram Anda)</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="telegramOwnerId" type="text" value="<%= settings.telegramOwnerId %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="Contoh: 123456789">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Channel Telegram (Notifikasi)</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="telegramChannelId" type="text" value="<%= settings.telegramChannelId || '' %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="@usernamechannel atau -100xxxxxxxxxx">
+          </div>
+          <p class="text-[11px] text-gray-500 mt-1.5">Bot harus jadi admin channel. Notifikasi deposit dan withdraw dikirim ke sini.</p>
+        </div>
+        <!-- Enabled (hidden) -->
+        <input type="hidden" name="telegramBotEnabled" id="telegramBotEnabledInput" value="<%= settings.telegramBotEnabled ? 'on' : '' %>">
+      </div>
+
+      <!-- Tombol simpan -->
+      <div class="flex justify-end mt-5 pt-4 border-t border-gray-100">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan Pengaturan Bot
+        </button>
+      </div>
+    </div>
+
+    <!-- ===================== KONFIGURASI SMTP EMAIL ===================== -->
+    <div id="set-11" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+      <div class="flex items-center gap-2.5 mb-4 pb-3 border-b border-slate-100">
+        <span class="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 border border-violet-100 flex items-center justify-center shrink-0"><i class="fas fa-envelope text-[13px]"></i></span>
+        <h2 class="text-[15px] font-semibold text-slate-800">Konfigurasi SMTP Email</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <!-- Email Gmail -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Email Gmail</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="smtpUser" type="email" value="<%= settings.smtpUser %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="emailanda@gmail.com">
+          </div>
+        </div>
+        <!-- App Password -->
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">App Password</label>
+          <div class="flex items-center bg-gray-50 border border-[#dddddd] rounded-[2px] p-1.5 transition-all focus-within:border-gray-500 focus-within:ring-1 focus-within:ring-gray-500">
+            <input name="smtpPass" type="text" value="<%= settings.smtpPass %>" class="flex-1 bg-transparent px-2 py-2 text-xs font-medium text-gray-800 outline-none w-full" placeholder="16 karakter App Password">
+          </div>
+          <p class="text-[10px] text-gray-400 mt-1.5">Gunakan App Password dari Google, bukan password login biasa.</p>
+        </div>
+      </div>
+      <!-- Tombol simpan khusus card ini -->
+      <div class="flex justify-end mt-5 pt-4 border-t border-gray-100">
+        <button type="submit" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-3 py-4 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2">
+          <i class="fas fa-save text-xs"></i> Simpan SMTP
+        </button>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- ===================== ZONA BERBAHAYA — RESET DATABASE ===================== -->
+  <div class="bg-white border border-red-200 rounded-[2px] p-5 mb-8">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-red-100">
+      <i class="fas fa-exclamation-triangle text-gray-700 text-sm"></i>
+      <div>
+        <h2 class="text-sm font-medium text-gray-800">Zona Berbahaya</h2>
+        <p class="text-xs font-medium text-gray-500 mt-0.5">Pengaturan di bawah ini akan berdampak fatal pada data Anda.</p>
+      </div>
+    </div>
+    
+    <div class="flex flex-col md:flex-row md:items-center justify-between bg-red-50/50 rounded-[2px] p-4 border border-red-100 gap-3">
+      <div>
+        <h3 class="text-xs font-medium text-red-600">Reset Database</h3>
+        <p class="text-[11px] text-red-500 mt-1 max-w-xl">Menghapus permanen semua data pengguna, invoice, transaksi, dan withdrawal. Data admin & pengaturan tidak akan terhapus.</p>
+      </div>
+      <form action="/admin/settings/reset" method="POST" 
+            onsubmit="var answer = prompt('Ketik RESET untuk melanjutkan reset database:'); 
+                      if (answer !== 'RESET') { 
+                        alert('Reset dibatalkan. Anda harus mengetik RESET dengan benar.'); 
+                        return false; 
+                      } 
+                      return confirm('⚠️ PERINGATAN TERAKHIR!\n\nApakah Anda yakin ingin mereset database?\nSemua data pengguna, invoice, transaksi, dan withdrawal akan DIHAPUS PERMANEN.\nData admin & pengaturan TIDAK akan terhapus.\n\nKlik OK untuk melanjutkan atau Batal.');">
+        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white w-full md:w-auto px-5 py-3 rounded-[2px] text-xs font-medium shadow-sm transition-all inline-flex justify-center items-center gap-2 whitespace-nowrap">
+          <i class="fas fa-trash-alt text-xs"></i> Reset Database
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL METODE WITHDRAW MANUAL ===================== -->
+<div id="methodModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="hideModal()"></div>
+  <div class="relative bg-white shadow-xl overflow-hidden w-full max-w-sm transform transition-all scale-95 opacity-0 duration-200 rounded-[2px]" id="modalContent">
+    <div class="bg-white px-5 py-4 relative flex items-center justify-between border-b border-gray-200">
+      <h3 class="text-sm font-medium text-gray-800" id="modalTitle">Tambah Metode Withdraw Manual</h3>
+      <button type="button" id="btnCloseModal" class="w-7 h-7 flex items-center justify-center rounded-[2px] text-gray-500 hover:text-gray-700 transition-colors">&times;</button>
+    </div>
+    <div class="p-5">
+      <form id="methodForm" class="flex flex-col gap-3">
+        <input type="hidden" id="editIndex" value="-1">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Nama Metode</label>
+          <input type="text" id="methodName" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="Contoh: Dana" required>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Biaya Admin (Rp)</label>
+          <input type="number" id="methodFee" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="1000" min="0" required>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Minimal Penarikan (Rp)</label>
+          <input type="number" id="methodMin" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="0" min="0" value="0" required>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" id="btnCancelModal" class="px-4 py-3 rounded-[2px] text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors border border-[#dddddd]">Batal</button>
+          <button type="submit" class="px-5 py-3 rounded-[2px] text-xs font-medium text-white bg-brand-600 hover:bg-brand-700 shadow-sm transition-all">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL METODE WITHDRAW INSTAN ===================== -->
+<div id="instantMethodModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="hideInstantModal()"></div>
+  <div class="relative bg-white shadow-xl overflow-hidden w-full max-w-sm transform transition-all scale-95 opacity-0 duration-200 rounded-[2px]" id="instantModalContent">
+    <div class="bg-white px-5 py-4 relative flex items-center justify-between border-b border-gray-200">
+      <h3 class="text-sm font-medium text-gray-800" id="instantModalTitle">Tambah Metode Withdraw Instan</h3>
+      <button type="button" id="btnCloseInstantModal" class="w-7 h-7 flex items-center justify-center rounded-[2px] text-gray-500 hover:text-gray-700 transition-colors">&times;</button>
+    </div>
+    <div class="p-5">
+      <form id="instantMethodForm" class="flex flex-col gap-3">
+        <input type="hidden" id="instantEditIndex" value="-1">
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Nama Metode</label>
+          <input type="text" id="instantMethodName" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="Contoh: Dana" required>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Kode Produk H2H</label>
+          <input type="text" id="instantMethodCode" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="BBSD" required>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Biaya Admin (Rp)</label>
+          <input type="number" id="instantMethodFee" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="1000" min="0" required>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-700 mb-2">Minimal Nominal (Rp)</label>
+          <input type="number" id="instantMethodMinAmount" class="w-full bg-gray-50 border border-[#dddddd] rounded-[2px] px-3 py-3 text-xs font-medium text-gray-800 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500" placeholder="10000" min="0" required>
+        </div>
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="instantMethodActive" class="rounded-[2px] border-gray-300 text-brand-600 focus:ring-brand-600">
+          <label for="instantMethodActive" class="text-xs font-medium text-gray-700">Aktif</label>
+        </div>
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" id="btnCancelInstantModal" class="px-4 py-3 rounded-[2px] text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors border border-[#dddddd]">Batal</button>
+          <button type="submit" class="px-5 py-3 rounded-[2px] text-xs font-medium text-white bg-brand-600 hover:bg-brand-700 shadow-sm transition-all">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+  // ==============================
+  // QR Decoder dari Upload Gambar
+  // ==============================
+  document.getElementById('qrImageInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    const fileNameSpan = document.getElementById('qrFileName');
+    if (!file) {
+      fileNameSpan.textContent = 'Tidak ada file';
+      return;
+    }
+    fileNameSpan.textContent = file.name;
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        if (typeof jsQR === 'undefined') {
+          alert('Library jsQR tidak ditemukan. Pastikan koneksi internet aktif.');
+          return;
+        }
+        
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) {
+          document.getElementById('gopayStaticQr').value = code.data;
+          const notif = document.getElementById('localNotif');
+          if (notif) {
+            document.getElementById('localNotifMessage').textContent = 'QR Code berhasil dibaca dan string terisi.';
+            notif.classList.remove('hidden');
+            setTimeout(() => notif.classList.add('hidden'), 3000);
+          }
+        } else {
+          alert('Tidak dapat mendeteksi QR Code pada gambar. Pastikan gambar jelas dan berisi QR Code.');
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ==============================
+  // Withdraw Methods Manual (dengan field min)
+  // ==============================
+  (function() {
+    let withdrawMethods = <%- JSON.stringify(settings.withdrawMethods || []) %>;
+    // Pastikan setiap item memiliki field min (default 0)
+    withdrawMethods = withdrawMethods.map(m => ({
+      name: m.name,
+      fee: typeof m.fee === 'number' ? m.fee : 0,
+      min: (typeof m.min === 'number' && m.min > 0) ? m.min : 0
+    }));
+
+    const listContainer = document.getElementById('withdrawMethodList');
+    const jsonInput = document.getElementById('withdrawMethodsJsonInput');
+    const modal = document.getElementById('methodModal');
+    const modalContent = document.getElementById('modalContent');
+    const modalTitle = document.getElementById('modalTitle');
+    const methodForm = document.getElementById('methodForm');
+    const editIndexInput = document.getElementById('editIndex');
+    const nameInput = document.getElementById('methodName');
+    const feeInput = document.getElementById('methodFee');
+    const minInput = document.getElementById('methodMin');
+    const btnAdd = document.getElementById('btnAddMethod');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const btnCancelModal = document.getElementById('btnCancelModal');
+    const notifBox = document.getElementById('localNotif');
+    const notifMessage = document.getElementById('localNotifMessage');
+    const mainForm = document.getElementById('mainSettingsForm');
+
+    // Logo preview
+    const logoInput = document.getElementById('logoInput');
+    const logoPreview = document.getElementById('logoPreview');
+    const logoFileName = document.getElementById('logoFileName');
+
+    if (logoInput) {
+      logoInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!file.type.match('image.*')) {
+          alert('File harus berupa gambar (PNG, JPG, GIF).');
+          logoInput.value = '';
+          logoFileName.textContent = 'Tidak ada file dipilih';
+          return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+          alert('Ukuran file maksimal 2MB.');
+          logoInput.value = '';
+          logoFileName.textContent = 'Tidak ada file dipilih';
+          return;
+        }
+        logoFileName.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          logoPreview.classList.remove('hidden');
+          logoPreview.querySelector('img').src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function showLocalNotification(message, type = 'success') {
+      if (!notifBox || !notifMessage) return;
+      notifBox.className = type === 'success' 
+        ? 'bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-[2px] mb-4 text-xs font-medium flex items-center gap-3'
+        : 'bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[2px] mb-4 text-xs font-medium flex items-center gap-3';
+      notifMessage.textContent = message;
+      notifBox.classList.remove('hidden');
+      setTimeout(() => notifBox.classList.add('hidden'), 5000);
+    }
+
+    function renderList() {
+      if (!listContainer) return;
+      if (withdrawMethods.length === 0) {
+        listContainer.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs font-medium bg-gray-50 rounded-[2px] border border-[#dddddd]">Belum ada metode withdraw manual. Klik tombol "Tambah Metode".</div>`;
+      } else {
+        listContainer.innerHTML = withdrawMethods.map((m, i) => `
+          <div class="flex items-center justify-between bg-gray-50 rounded-[2px] px-4 py-3 border border-[#dddddd] hover:border-gray-400 transition-all">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-[2px] bg-white border border-[#dddddd] flex items-center justify-center text-xs font-medium text-gray-600">
+                ${m.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-800">${escapeHtml(m.name)}</p>
+                <p class="text-xs font-medium text-gray-800">Fee: Rp ${m.fee.toLocaleString('id-ID')} | Min: ${m.min > 0 ? 'Rp ' + m.min.toLocaleString('id-ID') : '<span class="text-gray-400">Sesuai Default</span>'}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="text-gray-400 hover:text-brand-600 transition-colors p-1.5 rounded-[2px] hover:bg-accent-50" onclick="editMethod(${i})" title="Edit">
+                <i class="fas fa-pen text-xs"></i>
+              </button>
+              <button type="button" class="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-[2px] hover:bg-red-50" onclick="deleteMethod(${i})" title="Hapus">
+                <i class="fas fa-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+      if (jsonInput) {
+        jsonInput.value = JSON.stringify(withdrawMethods);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+      });
+    }
+
+    function showModal(editing = false, index = -1) {
+      if (editing && index >= 0 && index < withdrawMethods.length) {
+        modalTitle.textContent = 'Edit Metode Withdraw Manual';
+        editIndexInput.value = index;
+        nameInput.value = withdrawMethods[index].name;
+        feeInput.value = withdrawMethods[index].fee;
+        minInput.value = withdrawMethods[index].min;
+      } else {
+        modalTitle.textContent = 'Tambah Metode Withdraw Manual';
+        editIndexInput.value = -1;
+        nameInput.value = '';
+        feeInput.value = '1000';
+        minInput.value = '0';
+      }
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function hideModal() {
+      modalContent.classList.remove('scale-100', 'opacity-100');
+      modalContent.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    methodForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      const fee = parseInt(feeInput.value);
+      const min = parseInt(minInput.value) || 0;
+      if (!name || isNaN(fee) || fee < 0 || isNaN(min) || min < 0) {
+        alert('Nama, biaya, dan minimal penarikan harus diisi dengan benar.');
+        return;
+      }
+
+      const editIdx = parseInt(editIndexInput.value);
+      if (editIdx >= 0) {
+        withdrawMethods[editIdx] = { name, fee, min };
+      } else {
+        withdrawMethods.push({ name, fee, min });
+      }
+
+      jsonInput.value = JSON.stringify(withdrawMethods);
+      renderList();
+
+      try {
+        const response = await fetch('/admin/settings/withdraw-methods', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ withdrawMethods })
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          showLocalNotification('Metode withdraw manual berhasil disimpan.');
+          hideModal();
+        } else {
+          if (editIdx >= 0) {
+            showLocalNotification('Gagal menyimpan metode.', 'error');
+          } else {
+            withdrawMethods.pop();
+            renderList();
+            alert('Gagal menyimpan metode.');
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Terjadi kesalahan jaringan.\n' + err);
+        if (editIdx === -1) {
+          withdrawMethods.pop();
+          renderList();
+        }
+      }
+    });
+
+    btnAdd.addEventListener('click', () => showModal(false));
+    btnCloseModal.addEventListener('click', hideModal);
+    btnCancelModal.addEventListener('click', hideModal);
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) hideModal();
+    });
+
+    window.editMethod = function(index) {
+      showModal(true, index);
+    };
+    
+    window.deleteMethod = async function(index) {
+      if (!confirm('Hapus metode ini?')) return;
+      const deletedMethod = withdrawMethods.splice(index, 1)[0];
+      jsonInput.value = JSON.stringify(withdrawMethods);
+      renderList();
+
+      try {
+        const response = await fetch('/admin/settings/withdraw-methods', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ withdrawMethods })
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+          showLocalNotification('Metode berhasil dihapus.');
+        } else {
+          withdrawMethods.splice(index, 0, deletedMethod);
+          jsonInput.value = JSON.stringify(withdrawMethods);
+          renderList();
+          alert('Gagal menghapus metode.');
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Terjadi kesalahan jaringan.');
+        withdrawMethods.splice(index, 0, deletedMethod);
+        jsonInput.value = JSON.stringify(withdrawMethods);
+        renderList();
+      }
+    };
+
+    mainForm.addEventListener('submit', function(e) {
+      jsonInput.value = JSON.stringify(withdrawMethods);
+    });
+
+    renderList();
+  })();
+
+  // ==============================
+  // Instant Withdraw Methods (H2H) - Disimpan via AJAX langsung
+  // ==============================
+  (function() {
+    let instantMethods = <%- JSON.stringify(settings.instantWithdrawMethods || []) %>;
+    const listContainer = document.getElementById('instantMethodList');
+    const jsonInput = document.getElementById('instantWithdrawMethodsJsonInput');
+    const modal = document.getElementById('instantMethodModal');
+    const modalContent = document.getElementById('instantModalContent');
+    const modalTitle = document.getElementById('instantModalTitle');
+    const form = document.getElementById('instantMethodForm');
+    const editIndexInput = document.getElementById('instantEditIndex');
+    const nameInput = document.getElementById('instantMethodName');
+    const codeInput = document.getElementById('instantMethodCode');
+    const feeInput = document.getElementById('instantMethodFee');
+    const minAmountInput = document.getElementById('instantMethodMinAmount');
+    const activeCheck = document.getElementById('instantMethodActive');
+    const btnAdd = document.getElementById('btnAddInstantMethod');
+    const btnCloseModal = document.getElementById('btnCloseInstantModal');
+    const btnCancelModal = document.getElementById('btnCancelInstantModal');
+    const notifBox = document.getElementById('localNotif');
+    const notifMessage = document.getElementById('localNotifMessage');
+
+    function showLocalNotification(message, type = 'success') {
+      if (!notifBox || !notifMessage) return;
+      notifBox.className = type === 'success' 
+        ? 'bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-[2px] mb-4 text-xs font-medium flex items-center gap-3'
+        : 'bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[2px] mb-4 text-xs font-medium flex items-center gap-3';
+      notifMessage.textContent = message;
+      notifBox.classList.remove('hidden');
+      setTimeout(() => notifBox.classList.add('hidden'), 5000);
+    }
+
+    function renderList() {
+      if (!listContainer) return;
+      if (instantMethods.length === 0) {
+        listContainer.innerHTML = `<div class="text-center py-6 text-gray-400 text-xs font-medium bg-gray-50 rounded-[2px] border border-[#dddddd]">Belum ada metode withdraw instan. Klik tombol "Tambah Metode Instan".</div>`;
+      } else {
+        listContainer.innerHTML = instantMethods.map((m, i) => `
+          <div class="flex items-center justify-between bg-gray-50 rounded-[2px] px-4 py-3 border border-[#dddddd] hover:border-gray-400 transition-all">
+            <div class="flex items-center gap-3 flex-1">
+              <div class="w-8 h-8 rounded-[2px] bg-white border border-[#dddddd] flex items-center justify-center text-xs font-medium text-gray-600">
+                ${m.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div class="flex items-center gap-2">
+                  <p class="text-xs font-medium text-gray-800">${escapeHtml(m.name)}</p>
+                  <span class="text-[10px] px-1.5 py-0.5 rounded-[2px] font-medium ${m.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${m.active ? 'Aktif' : 'Nonaktif'}</span>
+                </div>
+                <p class="text-xs text-gray-500">Kode: ${escapeHtml(m.code)} | Fee: Rp ${m.fee.toLocaleString('id-ID')} | Min: Rp ${m.minAmount.toLocaleString('id-ID')}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button type="button" class="text-gray-400 hover:text-brand-600 transition-colors p-1.5 rounded-[2px] hover:bg-accent-50" onclick="editInstantMethod(${i})" title="Edit">
+                <i class="fas fa-pen text-xs"></i>
+              </button>
+              <button type="button" class="text-gray-400 hover:text-red-500 transition-colors p-1.5 rounded-[2px] hover:bg-red-50" onclick="deleteInstantMethod(${i})" title="Hapus">
+                <i class="fas fa-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+      if (jsonInput) {
+        jsonInput.value = JSON.stringify(instantMethods);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/[&<>"']/g, function(m) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m];
+      });
+    }
+
+    function showModal(editing = false, index = -1) {
+      if (editing && index >= 0 && index < instantMethods.length) {
+        modalTitle.textContent = 'Edit Metode Withdraw Instan';
+        editIndexInput.value = index;
+        nameInput.value = instantMethods[index].name;
+        codeInput.value = instantMethods[index].code;
+        feeInput.value = instantMethods[index].fee;
+        minAmountInput.value = instantMethods[index].minAmount;
+        activeCheck.checked = instantMethods[index].active;
+      } else {
+        modalTitle.textContent = 'Tambah Metode Withdraw Instan';
+        editIndexInput.value = -1;
+        nameInput.value = '';
+        codeInput.value = '';
+        feeInput.value = '1000';
+        minAmountInput.value = '10000';
+        activeCheck.checked = true;
+      }
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modalContent.classList.remove('scale-95', 'opacity-0');
+        modalContent.classList.add('scale-100', 'opacity-100');
+      }, 10);
+    }
+
+    function hideModal() {
+      modalContent.classList.remove('scale-100', 'opacity-100');
+      modalContent.classList.add('scale-95', 'opacity-0');
+      setTimeout(() => {
+        modal.classList.add('hidden');
+      }, 200);
+    }
+
+    // Fungsi untuk menyimpan ke server via endpoint khusus
+    async function saveToServer() {
+      try {
+        const response = await fetch('/admin/settings/instant-withdraw-methods', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ instantWithdrawMethods: instantMethods })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Gagal menyimpan');
+        }
+        return true;
+      } catch (err) {
+        console.error(err);
+        alert('Gagal menyimpan metode instan: ' + err.message);
+        return false;
+      }
+    }
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const name = nameInput.value.trim();
+      const code = codeInput.value.trim();
+      const fee = parseInt(feeInput.value);
+      const minAmount = parseInt(minAmountInput.value);
+      const active = activeCheck.checked;
+
+      if (!name || !code || isNaN(fee) || fee < 0 || isNaN(minAmount) || minAmount < 0) {
+        alert('Semua field harus diisi dengan benar.');
+        return;
+      }
+
+      const editIdx = parseInt(editIndexInput.value);
+      const methodObj = { name, code, fee, minAmount, active };
+
+      // Backup array sebelum perubahan
+      const oldMethods = JSON.parse(JSON.stringify(instantMethods));
+
+      if (editIdx >= 0) {
+        instantMethods[editIdx] = methodObj;
+      } else {
+        instantMethods.push(methodObj);
+      }
+
+      renderList();
+
+      const saved = await saveToServer();
+      if (saved) {
+        showLocalNotification('Metode withdraw instan berhasil disimpan.');
+        hideModal();
+      } else {
+        // Rollback
+        instantMethods = oldMethods;
+        renderList();
+      }
+    });
+
+    btnAdd.addEventListener('click', () => showModal(false));
+    btnCloseModal.addEventListener('click', hideModal);
+    btnCancelModal.addEventListener('click', hideModal);
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) hideModal();
+    });
+
+    window.editInstantMethod = function(index) {
+      showModal(true, index);
+    };
+
+    window.deleteInstantMethod = async function(index) {
+      if (!confirm('Hapus metode ini?')) return;
+      const deleted = instantMethods.splice(index, 1)[0];
+      renderList();
+
+      const saved = await saveToServer();
+      if (!saved) {
+        // Rollback
+        instantMethods.splice(index, 0, deleted);
+        renderList();
+      } else {
+        showLocalNotification('Metode berhasil dihapus.');
+      }
+    };
+
+    // Render awal
+    renderList();
+  })();
+
+  // ==============================
+  // Toggle Bot Telegram
+  // ==============================
+  async function toggleBot() {
+    const btn = document.getElementById('toggleBotBtn');
+    const icon = btn.querySelector('i');
+    const statusText = document.getElementById('botStatusText');
+    const statusDot = statusText.previousElementSibling;
+    
+    // Disable tombol sementara
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    
+    try {
+      const response = await fetch('/admin/settings/toggle-bot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        // Update tampilan
+        if (data.botRunning) {
+          statusDot.className = 'w-3 h-3 rounded-full bg-green-500';
+          statusText.textContent = 'Running';
+          statusText.className = 'text-xs font-medium text-green-600';
+          btn.className = 'w-8 h-8 flex items-center justify-center rounded-[2px] text-xs text-white shadow-sm transition-all bg-red-500 hover:bg-red-600';
+          icon.className = 'fas fa-power-off text-xs';
+          btn.title = 'Stop Bot';
+        } else {
+          statusDot.className = 'w-3 h-3 rounded-full bg-red-500';
+          statusText.textContent = 'Stopped';
+          statusText.className = 'text-xs font-medium text-red-600';
+          btn.className = 'w-8 h-8 flex items-center justify-center rounded-[2px] text-xs text-white shadow-sm transition-all bg-green-500 hover:bg-green-600';
+          icon.className = 'fas fa-play text-xs';
+          btn.title = 'Start Bot';
+        }
+        
+        // Update hidden input
+        document.getElementById('telegramBotEnabledInput').value = data.botRunning ? 'on' : '';
+        
+        showLocalNotification(data.message || 'Status bot berhasil diubah.');
+      } else {
+        alert(data.error || 'Gagal mengubah status bot.');
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
+
+  // ==============================
+  // Restart Bot Telegram
+  // ==============================
+  async function restartBot() {
+    const btn = document.getElementById('restartBotBtn');
+    if (!btn) return;
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    try {
+      const response = await fetch('/admin/settings/restart-bot', { method: 'POST' });
+      const data = await response.json();
+      if (data.success) {
+        showLocalNotification(data.message, 'success');
+        // Pastikan indikator tetap "Running"
+        const statusDot = document.getElementById('botStatusText').previousElementSibling;
+        const statusText = document.getElementById('botStatusText');
+        statusDot.className = 'w-3 h-3 rounded-full bg-green-500';
+        statusText.textContent = 'Running';
+        statusText.className = 'text-xs font-medium text-green-600';
+      } else {
+        alert(data.message || 'Gagal restart bot.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Terjadi kesalahan jaringan.');
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+    }
+  }
+
+  // ==============================
+  // Toggle Konfigurasi Payment Gateway
+  // ==============================
+  (function() {
+    const gateways = ['gopaymerchant', 'pakasir', 'xendit', 'midtrans', 'casaku', 'klikqris', 'agw'];
+    const agwUrlEl = document.getElementById('agwWebhookUrl');
+    if (agwUrlEl) agwUrlEl.textContent = location.origin + '/agw/webhook';
+    const radios = {}, configs = {}, labels = {};
+    gateways.forEach(gw => {
+      radios[gw] = document.querySelector('input[name="paymentGateway"][value="' + gw + '"]');
+      configs[gw] = document.getElementById('config-' + gw);
+      labels[gw] = document.getElementById('label-' + gw);
+    });
+
+    const h2hSection = document.getElementById('set-4');
+    function toggleGatewayConfig() {
+      const active = gateways.find(gw => radios[gw] && radios[gw].checked) || 'gopaymerchant';
+      // Pengaturan H2H Orderkuota muncul untuk gateway tanpa sistem penarikan (selain Xendit).
+      if (h2hSection) h2hSection.classList.toggle('hidden', active === 'xendit');
+      gateways.forEach(gw => {
+        const isActive = gw === active;
+        if (configs[gw]) {
+          configs[gw].classList.toggle('hidden', !isActive);
+          configs[gw].querySelectorAll('input, textarea').forEach(el => el.disabled = !isActive);
+        }
+        if (labels[gw]) {
+          labels[gw].classList.toggle('border-accent-500', isActive);
+          labels[gw].classList.toggle('bg-accent-50/40', isActive);
+          labels[gw].classList.toggle('border-[#dddddd]', !isActive);
+        }
+      });
+    }
+
+    gateways.forEach(gw => { if (radios[gw]) radios[gw].addEventListener('change', toggleGatewayConfig); });
+    // Panggil saat load untuk sinkronisasi disable
+    toggleGatewayConfig();
+  })();
+
+  // Deklarasi ulang showLocalNotification agar bisa diakses di luar scope
+  function showLocalNotification(message, type = 'success') {
+    const notifBox = document.getElementById('localNotif');
+    const notifMessage = document.getElementById('localNotifMessage');
+    if (!notifBox || !notifMessage) return;
+    notifBox.className = type === 'success' 
+      ? 'bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-[2px] mb-4 text-xs font-medium flex items-center gap-3'
+      : 'bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-[2px] mb-4 text-xs font-medium flex items-center gap-3';
+    notifMessage.textContent = message;
+    notifBox.classList.remove('hidden');
+    setTimeout(() => notifBox.classList.add('hidden'), 5000);
+  }
+</script>

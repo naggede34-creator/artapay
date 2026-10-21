@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a1128" />
+  <title><%= typeof title !== 'undefined' ? title + ' - ' + settings.name : settings.name + ' - ' + settings.title %></title>
+  
+  
+  <!-- SEO -->
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="ARTA PEDIA PAY">
+  <meta name="keywords" content="arta pedia pay, qris payment, payment gateway, qris otomatis, payment gateway indonesia, api gateway">
+  <!-- Canonical -->
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="<%= typeof title !== 'undefined' ? title + ' - ' + settings.name : settings.name + ' - ' + settings.title %>">
+  <meta property="og:description" content="<%= settings.description || 'Payment Gateway QRIS Otomatis Indonesia' %>">
+  
+  <meta property="og:site_name" content="<%= settings.name %>">
+
+  <% if (settings.logoUrl) { %>
+  <meta property="og:image" content="<%= settings.logoUrl %>">
+  <meta name="twitter:image" content="<%= settings.logoUrl %>">
+  <% } %>
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="<%= typeof title !== 'undefined' ? title + ' - ' + settings.name : settings.name + ' - ' + settings.title %>">
+  <meta name="twitter:description" content="<%= settings.description || 'Payment Gateway QRIS Otomatis Indonesia' %>">
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"Organization",
+    "name":"<%= settings.name %>",
+    
+    "logo":"<%= settings.logoUrl %>"
+  }
+  </script>  
+
+  <% if (settings.description) { %>
+  <meta name="description" content="<%= settings.description %>">
+  <% } %>
+
+  <% if (settings.logoUrl) { %>
+  <link rel="icon" type="image/jpeg" href="<%= settings.logoUrl %>">
+  <% } %>
+
+  <%- include('theme') %>
+  <style>
+    body { padding-top: 56px; background: #f1f5f9; }
+    body.has-menubar { padding-top: 100px; }
+
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+      background: #ffffff; border-bottom: 1px solid #e2e8f0;
+    }
+    .menubar {
+      height: 44px; background: #0b1f4d; color: #ffffff;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; font-size: 15px; user-select: none;
+    }
+    .menubar .menu-chev { font-size: 11px; transition: transform .3s ease; }
+    .sidebar-checkbox { display: none; }
+    .sidebar-checkbox:checked ~ .topbar .menu-chev { transform: rotate(180deg); }
+
+    .drawer {
+      position: fixed; top: 100px; left: 0; bottom: 0;
+      width: 290px; max-width: 84vw;
+      background: #0b1f4d; z-index: 45; overflow-y: auto;
+      transform: translateX(-100%); transition: transform .3s ease;
+      padding: 8px 0 24px; box-shadow: 4px 0 24px rgba(15, 23, 42, .25);
+    }
+    .sidebar-checkbox:checked ~ .drawer { transform: translateX(0); }
+
+    .drawer-overlay {
+      position: fixed; top: 100px; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, .5); z-index: 44;
+      opacity: 0; visibility: hidden; transition: opacity .3s ease, visibility .3s ease;
+    }
+    .sidebar-checkbox:checked ~ .drawer-overlay { opacity: 1; visibility: visible; }
+
+    .drawer a {
+      display: flex; align-items: center; gap: 16px;
+      padding: 14px 24px; font-size: 15px; font-weight: 500;
+      color: #cbd5e1; border-left: 3px solid transparent;
+      transition: background .2s ease, color .2s ease;
+    }
+    .drawer a i { width: 22px; text-align: center; font-size: 16px; }
+    .drawer a:hover { background: rgba(255, 255, 255, .06); color: #ffffff; }
+    .drawer a.active { background: rgba(96, 165, 250, .14); color: #ffffff; border-left-color: #60a5fa; }
+    .drawer a .ext { margin-left: auto; font-size: 11px; opacity: .6; width: auto; }
+    .drawer .drawer-sep { height: 1px; background: rgba(255, 255, 255, .1); margin: 8px 24px; }
+    .drawer a.logout { color: #fca5a5; }
+    .drawer a.logout:hover { background: rgba(239, 68, 68, .15); color: #fecaca; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col <%= (typeof user !== 'undefined' && user) ? 'has-menubar' : '' %>">
+
+<%
+const isAdmin = (typeof user !== 'undefined' && user && user.role === 'admin');
+const isLoggedIn = (typeof user !== 'undefined' && user);
+const activePath = (typeof currentPath !== 'undefined') ? currentPath : '';
+const navItems = isAdmin ? [
+  { href: '/admin/dashboard', icon: 'fa-house', color: 'text-sky-400', label: 'Dashboard' },
+  { href: '/admin/users', icon: 'fa-users', color: 'text-emerald-400', label: 'Kelola User' },
+  { href: '/admin/withdraw', icon: 'fa-circle-arrow-down', color: 'text-amber-400', label: 'Kelola Withdraw' },
+  { href: '/admin/payments', icon: 'fa-credit-card', color: 'text-cyan-400', label: 'Permintaan Payment' },
+  { href: '/admin/transactions', icon: 'fa-money-bill-transfer', color: 'text-violet-400', label: 'Transaksi User' },
+  { href: '/admin/account', icon: 'fa-user', color: 'text-pink-400', label: 'Profil' },
+  { href: '/admin/settings', icon: 'fa-gear', color: 'text-slate-300', label: 'Settings' }
+] : [
+  { href: '/dashboard', icon: 'fa-house', color: 'text-sky-400', label: 'Ikhtisar' },
+  { href: '/deposit', icon: 'fa-money-bill-wave', color: 'text-emerald-400', label: 'Transaksi' },
+  { href: '/withdraw', icon: 'fa-circle-arrow-down', color: 'text-amber-400', label: 'Penarikan' },
+  { href: '/profile', icon: 'fa-user', color: 'text-pink-400', label: 'Profil' }
+];
+%>
+
+<% if (isLoggedIn) { %>
+<input type="checkbox" id="sidebar-toggle" class="sidebar-checkbox">
+<% } %>
+
+<nav class="topbar">
+  <div class="max-w-6xl mx-auto flex justify-between items-center h-[56px] px-4">
+    <a href="/" class="flex items-center gap-2.5 h-full min-w-0">
+      <% if (settings.logoUrl) { %>
+        <img src="<%= settings.logoUrl %>" alt="Logo" class="h-9 w-9 object-contain rounded-md" />
+      <% } %>
+      <span class="font-semibold text-[18px] text-white tracking-wide truncate"><%= settings.name %></span>
+    </a>
+
+    <% if (isLoggedIn) { %>
+      <a href="<%= isAdmin ? '/admin/account' : '/profile' %>" class="flex items-center gap-1.5 text-[14px] font-medium text-slate-200 hover:text-white transition-colors">
+        <%= user.username %> <i class="fa-solid fa-caret-down text-[11px]"></i>
+      </a>
+    <% } else { %>
+      <div class="flex items-center gap-2 shrink-0">
+        <a href="/login" class="px-4 py-2 text-[13px] font-semibold text-white border-2 border-white/50 rounded-[10px] hover:bg-white/10 transition-colors">Masuk</a>
+        <a href="/register" class="px-4 py-2 text-[13px] font-semibold text-white bg-brand-600 rounded-[10px] hover:bg-brand-700 transition-colors">Daftar</a>
+      </div>
+    <% } %>
+  </div>
+
+  <% if (isLoggedIn) { %>
+  <label for="sidebar-toggle" class="menubar">
+    <i class="fa-solid fa-chevron-right menu-chev"></i> Menu
+  </label>
+  <% } %>
+</nav>
+
+<% if (isLoggedIn) { %>
+<label for="sidebar-toggle" class="drawer-overlay"></label>
+
+<div class="drawer">
+  <% navItems.forEach(function(item) { %>
+    <a href="<%= item.href %>" class="<%= activePath === item.href ? 'active' : '' %>">
+      <i class="fa-solid <%= item.icon %> <%= item.color %>"></i> <%= item.label %>
+    </a>
+  <% }) %>
+
+  <% if (!isAdmin) { %>
+    <div class="drawer-sep"></div>
+    <a href="/docs" class="<%= activePath === '/docs' ? 'active' : '' %>">
+      <i class="fa-solid fa-book-open text-cyan-400"></i> Panduan API <i class="fa-solid fa-arrow-up-right-from-square ext"></i>
+    </a>
+    <% if (settings.channelInformation) { %>
+    <a href="<%= settings.channelInformation %>" target="_blank" rel="noopener noreferrer">
+      <i class="fa-brands fa-telegram text-sky-400"></i> Channel Informasi <i class="fa-solid fa-arrow-up-right-from-square ext"></i>
+    </a>
+    <% } %>
+  <% } %>
+
+  <div class="drawer-sep"></div>
+  <a href="/logout" class="logout">
+    <i class="fa-solid fa-right-from-bracket"></i> Logout
+  </a>
+</div>
+<% } %>
+
+<main class="flex-1 w-full max-w-[480px] md:max-w-6xl mx-auto py-0">

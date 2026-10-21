@@ -1,0 +1,150 @@
+<%- include('partials/header') %>
+
+<div class="max-w-3xl mx-auto px-4 mt-4 pb-6">
+
+  <!-- ========== HERO ========== -->
+  <div class="bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 rounded-xl shadow-lg px-5 py-14 mb-8 text-center">
+    <% if (settings.logoUrl) { %>
+      <img src="<%= settings.logoUrl %>" alt="Logo" class="h-16 mb-4 w-auto mx-auto object-contain" />
+    <% } else { %>
+      <div class="w-16 h-16 mx-auto mb-4 rounded-[2px] bg-accent-50 text-brand-600 flex items-center justify-center border border-[#dddddd]">
+        <!-- Ikon dihapus -->
+      </div>
+    <% } %>
+
+    <h1 class="text-xl md:text-3xl font-semibold text-white mb-2">
+      <%= settings.title || 'Platform Pembayaran QRIS Payment Gateway' %>
+    </h1>
+    <p class="text-[13.5px] font-medium text-brand-100 max-w-2xl mx-auto">
+      <%= settings.description || 'Payment gateway otomatis untuk bisnis digital. Cepat, aman, dan biaya rendah.' %>
+    </p>
+
+    <div class="flex flex-col gap-3 mt-6 w-full">
+      <a href="/register" class="w-full bg-white text-brand-700 py-3 px-3 rounded-lg text-[14px] font-semibold shadow-md hover:bg-brand-50 transition-colors flex items-center justify-center gap-2">
+        Mulai Sekarang <i class="fas fa-arrow-right text-[12.5px]"></i>
+      </a>
+      <a href="/docs" class="w-full bg-white/10 border border-white/40 text-white py-3 px-3 rounded-lg text-[14px] font-semibold hover:bg-white/20 transition-colors flex items-center justify-center gap-2">
+        <i class="fas fa-book text-[12.5px]"></i> Panduan API
+      </a>
+    </div>
+  </div>
+
+  <%- include('partials/mon_chart', { pubStats: pubStats }) %>
+
+
+  <!-- ========== MENGAPA MEMILIH KAMI? ========== -->
+  <div class="mb-8">
+    <h2 class="text-base font-medium text-center text-gray-800 mb-4">Mengapa Pakai <%= settings.name %>?</h2>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center mb-3"><i class="fa-solid fa-bolt"></i></div>
+        <div>
+          <h3 class="text-[14.5px] font-semibold text-gray-800 mb-1">Pendaftaran Instan</h3>
+          <p class="text-[12.5px] font-medium text-gray-700">
+            Kamu bisa langsung terima pembayaran setelah registrasi tanpa harus menunggu berhari-hari.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <div class="w-10 h-10 rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center mb-3"><i class="fa-solid fa-puzzle-piece"></i></div>
+        <div>
+          <h3 class="text-[14.5px] font-semibold text-gray-800 mb-1">Integrasi Mudah</h3>
+          <p class="text-[12.5px] font-medium text-gray-700">
+            Satu halaman dokumentasi yang lengkap dan sangat mudah dipahami untuk pemula.
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3"><i class="fa-solid fa-percent"></i></div>
+        <div>
+          <h3 class="text-[14.5px] font-semibold text-gray-800 mb-1">Biaya Rendah</h3>
+          <p class="text-[12.5px] font-medium text-gray-700">
+            Biaya yang sangat rendah untuk memaksimalkan keuntungan bisnis kamu
+          </p>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <div class="w-10 h-10 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center mb-3"><i class="fa-solid fa-money-bill-transfer"></i></div>
+        <div>
+          <h3 class="text-[14.5px] font-semibold text-gray-800 mb-1">Penarikan Instan</h3>
+          <p class="text-[12.5px] font-medium text-gray-700">
+            Penarikan diproses cepat hanya hitungan detik tanpa menunggu lama.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== F.A.Q ========== -->
+  <div class="mb-10">
+    <h2 class="text-base font-medium text-center text-gray-800 mb-4">Pertanyaan Umum (F.A.Q)</h2>
+    <div class="space-y-4">
+      <!-- Pertanyaan 1 -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <h3 class="text-[14.5px] font-medium text-gray-800 mb-1">
+          Apa itu <%= settings.name %>?
+        </h3>
+        <p class="text-[12.5px] font-medium text-gray-700">
+          <%= settings.name %> adalah platform QRIS Payment Gateway yang memudahkan bisnis atau aplikasi menerima pembayaran dari berbagai Ewallet atau Bank secara otomatis, cepat, dan aman dalam satu QRIS.
+        </p>
+      </div>
+      
+      <!-- Pertanyaan 3 -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <h3 class="text-[14.5px] font-medium text-gray-800 mb-1">Apakah ada biaya pendaftaran atau berlangganan?</h3>
+        <p class="text-[12.5px] font-medium text-gray-700">
+          Tidak ada. Biaya hanya ada saat melakukan transaksi saja.
+        </p>
+      </div>      
+      
+      <!-- Pertanyaan 3 -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <h3 class="text-[14.5px] font-medium text-gray-800 mb-1">Apakah <%= settings.name %> aman?</h3>
+        <p class="text-[12.5px] font-medium text-gray-700">
+          Payment Gateway yang kami gunakan telah terdaftar secara resmi sebagai Penyedia Jasa Pembayaran (PJP) yang diawasi oleh Bank Indonesia (BI).
+        </p>
+      </div>            
+      
+      <!-- Pertanyaan 4 -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <h3 class="text-[14.5px] font-medium text-gray-800 mb-1">Apakah setelah transaksi berhasil bisa langsung dicairkan?</h3>
+        <p class="text-[12.5px] font-medium text-gray-700">
+          Bisa. Pencairan bisa langsung dicairkan dengan 2 pilihan instan atau manual.
+        </p>
+      </div>            
+      
+      <!-- Pertanyaan 4 -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <h3 class="text-[14.5px] font-medium text-gray-800 mb-1">Apakah ada biaya pencairan?</h3>
+        <p class="text-[12.5px] font-medium text-gray-700">
+          Untuk pencairan manual tidak akan dikenakan biaya (gratis).
+        </p>
+      </div>                  
+      
+      <!-- Pertanyaan 5 -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-5">
+        <h3 class="text-[14.5px] font-medium text-gray-800 mb-1">Berapa lama proses pencairan?</h3>
+        <p class="text-[12.5px] font-medium text-gray-700">
+          Pencairan manual akan di proses 1x24 jam, dan untuk pencairan instan hanya memerlukan waktu 1-5 menit.
+        </p>
+      </div>                  
+      
+    </div>
+  </div>
+
+  <!-- ========== CALL TO ACTION AKHIR ========== -->
+  <div class="bg-brand-50 border border-brand-200 rounded-xl p-5 text-center">
+    <h3 class="text-[14.5px] font-medium text-gray-800 mb-1">Siap Menerima Pembayaran QRIS?</h3>
+    <p class="text-[12.5px] font-medium text-gray-700 mb-4">Gabung sekarang dan integrasikan pembayaran QRIS Payment otomatis kedalam aplikasi kamu.</p>
+    <a href="/register" class="bg-brand-600 text-white px-6 py-3 rounded-lg text-[14px] font-semibold shadow-md hover:bg-brand-700 transition-colors inline-flex items-center gap-2">
+      Buat Akun Gratis <i class="fas fa-arrow-right text-[12.5px]"></i>
+    </a>
+  </div>
+
+</div>
+
+<%- include('partials/footer2') %>

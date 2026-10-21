@@ -1,0 +1,496 @@
+<%- include('partials/header', { title: 'Profil' }) %>
+
+<style>
+  :root {
+    --brand-600: #3b82f6;
+    --accent-50: #eff6ff;
+  }
+  .text-brand-600 { color: var(--brand-600); }
+  .bg-accent-50 { background-color: var(--accent-50); }
+  
+  .custom-scroll::-webkit-scrollbar { width: 2px; height: 2px; }
+  .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+  .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+  .custom-scroll:hover::-webkit-scrollbar-thumb { background-color: #94a3b8; }
+</style>
+
+<div class="max-w-3xl mx-auto px-4 pb-2 pt-4">
+
+  <%- include('partials/toast') %>
+
+
+  <%- include('partials/page_head', { title: 'Profil', subtitle: 'Informasi akun dan kredensial API Anda', icon: 'fa-user', color: 'brand' }) %>
+
+  <%
+    let rawApiKey = '';
+    if (typeof apiKeys !== 'undefined' && apiKeys.length > 0) {
+      rawApiKey = apiKeys[0].key;
+    } else if (user.apiKey) {
+      rawApiKey = user.apiKey;
+    }
+    let maskedApiKey = rawApiKey ? '••••••••••••••••' : 'Belum ada API Key';
+    const hasText = (v) => v && String(v).trim() !== '';
+  %>
+
+  <!-- Kartu identitas (seluruh kartu biru) -->
+  <div class="rounded-xl shadow-sm overflow-hidden mb-4 bg-gradient-to-br from-brand-700 via-brand-600 to-brand-400 text-white">
+    <div class="px-4 py-5 flex items-center gap-3">
+      <div class="relative w-16 h-16 rounded-2xl bg-white/95 border-2 border-white/80 shadow-lg flex items-center justify-center overflow-hidden shrink-0">
+        <span class="avatar-initial text-2xl font-semibold text-brand-600 uppercase"><%= (user.username || '?').charAt(0) %></span>
+        <% if (hasText(user.merchantLogoUrl)) { %>
+          <img src="<%= user.merchantLogoUrl %>" alt="Foto profil" referrerpolicy="no-referrer" loading="lazy"
+               class="absolute inset-0 w-full h-full object-cover bg-white"
+               onerror="this.remove()">
+        <% } %>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="text-base font-semibold text-white truncate mb-0"><%= user.username %></p>
+        <p class="text-[12.5px] text-white/80 truncate mb-0"><%= user.email %></p>
+      </div>
+      <span class="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold capitalize bg-white/20 text-white border border-white/30">
+        <i class="fa-solid <%= user.role === 'admin' ? 'fa-shield-halved' : 'fa-circle-check' %> text-[10px]"></i> <%= user.role %>
+      </span>
+    </div>
+  </div>
+
+  <!-- Detail akun -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+    <div class="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center gap-2">
+      <i class="fa-solid fa-id-card text-slate-500 text-sm"></i>
+      <p class="text-sm font-semibold text-slate-700 mb-0">Detail Akun</p>
+    </div>
+    <dl class="divide-y divide-slate-100 text-[12.5px]">
+      <div class="flex items-center justify-between gap-4 px-4 py-3">
+        <dt class="text-slate-500 shrink-0">ID User</dt>
+        <dd class="font-medium text-slate-800 truncate mb-0"><%= (user._id.toString()).slice(10) %></dd>
+      </div>
+      <div class="flex items-center justify-between gap-4 px-4 py-3">
+        <dt class="text-slate-500 shrink-0">Tanggal Bergabung</dt>
+        <dd class="font-medium text-slate-800 truncate mb-0"><%= new Date(user.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></dd>
+      </div>
+      <div class="flex items-center justify-between gap-4 px-4 py-3">
+        <dt class="text-slate-500 shrink-0">Nama Project</dt>
+        <dd class="font-medium text-slate-800 truncate mb-0"><%= user.projectName || '-' %></dd>
+      </div>
+      <div class="flex items-center justify-between gap-4 px-4 py-3">
+        <dt class="text-slate-500 shrink-0">Callback URL</dt>
+        <dd class="font-medium text-slate-800 truncate mb-0 min-w-0">
+          <% if (hasText(user.callbackUrl)) { %><span title="<%= user.callbackUrl %>"><%= user.callbackUrl %></span><% } else { %><span class="text-slate-400">-</span><% } %>
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <!-- Detail payment -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+    <div class="bg-slate-50 border-b border-slate-200 px-4 py-2.5 flex items-center gap-2">
+      <i class="fa-solid fa-credit-card text-slate-500 text-sm"></i>
+      <p class="text-sm font-semibold text-slate-700 mb-0 flex-1">Detail Payment</p>
+      <button type="button" onclick="openPaymentModal()" class="text-[12px] font-medium text-brand-600 hover:text-brand-700 bg-transparent border-0 cursor-pointer">
+        <i class="fa-solid fa-plus text-[10px]"></i> Ajukan / Ubah
+      </button>
+    </div>
+    <div class="divide-y divide-slate-100 text-[12.5px]">
+      <% if (paymentAccounts.length === 0 && pendingPayments.length === 0) { %>
+        <p class="px-4 py-3 text-slate-400 mb-0">Belum ada payment. Tambahkan payment untuk bisa melakukan penarikan.</p>
+      <% } %>
+      <% paymentAccounts.forEach(function(pa) { %>
+        <p class="px-4 py-3 font-medium text-slate-800 mb-0 break-all"><%= pa.provider.toUpperCase() %> - <%= pa.accountName.toUpperCase() %> - <%= pa.accountNumber %></p>
+      <% }); %>
+      <% pendingPayments.forEach(function(pr) { %>
+        <p class="px-4 py-3 font-medium text-amber-600 mb-0 break-all"><%= pr.provider.toUpperCase() %> - <%= pr.accountName.toUpperCase() %> - <%= pr.accountNumber %> <span class="text-[11px]">(menunggu persetujuan admin)</span></p>
+      <% }); %>
+    </div>
+    <% if (lastRejected && (!lastRejected.processedAt || (Date.now() - new Date(lastRejected.processedAt).getTime()) < 3 * 24 * 60 * 60 * 1000)) { %>
+      <p class="px-4 py-2.5 text-[11.5px] text-red-600 bg-red-50 border-t border-red-100 mb-0">Permintaan <%= lastRejected.provider %> terakhir ditolak<%= lastRejected.adminNote ? ': ' + lastRejected.adminNote : '' %>.</p>
+    <% } %>
+    <p class="px-4 py-2.5 text-[11px] text-slate-400 border-t border-slate-100 mb-0">Payment baru diproses admin dalam 1-24 jam kerja. Untuk percepat atau menambah payment baru, chat admin di Telegram <a href="<%= adminTelegram.url %>" target="_blank" rel="noopener" class="text-brand-600 font-medium">@<%= adminTelegram.username %></a>.</p>
+  </div>
+
+  <!-- API Key -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+    <div class="bg-amber-50 border-b border-amber-100 px-4 py-2.5 flex items-center gap-2">
+      <i class="fa-solid fa-key text-amber-600 text-sm"></i>
+      <p class="text-sm font-semibold text-amber-800 mb-0">API Key</p>
+    </div>
+    <div class="px-4 py-4">
+      <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 min-w-0">
+        <span id="tableApiKeyDisplay" class="flex-1 truncate font-mono text-[12.5px] text-slate-700"><%= maskedApiKey %></span>
+        <% if (rawApiKey) { %>
+          <button type="button" onclick="toggleTableApiKey()" class="text-slate-500 hover:text-slate-800 w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center shrink-0" title="Tampilkan/Sembunyikan API Key">
+            <i id="tableApiKeyToggleIcon" class="far fa-eye text-[12.5px]"></i>
+          </button>
+          <button type="button" onclick="copyTableApiKey()" class="text-slate-500 hover:text-slate-800 w-8 h-8 rounded-lg hover:bg-white flex items-center justify-center shrink-0" title="Salin API Key">
+            <i class="far fa-copy text-[12.5px]"></i>
+          </button>
+        <% } %>
+      </div>
+      <p class="text-[11px] text-slate-400 mt-2 mb-0">Jangan bagikan API Key kepada siapa pun.</p>
+    </div>
+  </div>
+
+  <!-- Tombol edit -->
+  <button onclick="openEditInfoModal()" class="bg-brand-600 hover:bg-brand-700 text-white w-full px-4 py-3 rounded-[2px] text-[12.5px] font-medium shadow-sm transition-all flex items-center justify-center gap-2 mb-6">
+    <i class="fas fa-pen-to-square text-[12.5px]"></i> Edit Informasi
+  </button>
+
+  <!-- Modal Payment -->
+  <div id="paymentModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-6">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closePaymentModal()"></div>
+    <div class="relative bg-white border border-[#dddddd] rounded-[2px] shadow-sm w-full max-w-sm max-h-[90vh] overflow-y-auto">
+      <div class="px-5 py-3 border-b border-[#dddddd] flex items-center justify-between">
+        <h3 class="text-sm font-medium text-gray-800">Ajukan Payment</h3>
+        <button onclick="closePaymentModal()" class="w-7 h-7 flex items-center justify-center rounded-[2px] text-gray-800 hover:bg-gray-100"><i class="fas fa-times text-sm"></i></button>
+      </div>
+      <div class="p-5">
+        <form method="POST" action="/profile/payment" enctype="multipart/form-data" id="paymentForm" class="flex flex-col gap-4">
+          <div>
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Provider Payment</label>
+            <select name="provider" id="paymentProvider" required class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600">
+              <option value="">-- Pilih Provider Payment --</option>
+              <% providers.forEach(function(pv) { %>
+                <option value="<%= pv.name %>"><%= pv.name %> (<%= [pv.manualFee !== null ? 'Fee manual Rp ' + pv.manualFee.toLocaleString('id-ID') : null, pv.instantFee !== null ? 'Fee instan Rp ' + pv.instantFee.toLocaleString('id-ID') : null].filter(Boolean).join(' / ') %>)</option>
+              <% }); %>
+            </select>
+          </div>
+          <div id="paymentFields" class="hidden flex flex-col gap-4">
+            <div>
+              <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Nama Akun</label>
+              <input name="accountName" id="paymentName" type="text" maxlength="40" placeholder="Nama sesuai akun payment" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600">
+            </div>
+            <div>
+              <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Nomor</label>
+              <input name="accountNumber" id="paymentNumber" type="text" inputmode="numeric" placeholder="08xxxxxxxxx" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600">
+            </div>
+            <div>
+              <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Screenshot Profil Payment</label>
+              <input name="screenshot" id="paymentShot" type="file" accept="image/png,image/jpeg,image/webp" class="w-full text-[12.5px] text-gray-700 border border-[#dddddd] rounded-[2px] p-2">
+              <p class="text-[11px] text-gray-500 mt-1 mb-0">JPG, PNG, atau WEBP, maksimal 4 MB.</p>
+            </div>
+            <div class="text-[12px] font-medium text-gray-700 bg-amber-50 p-2 leading-relaxed">
+              ➤ Permintaan diproses admin dalam 1-24 jam kerja.<br>
+              ➤ Mau cepat diterima atau menambah payment baru? Chat admin di Telegram <a href="<%= adminTelegram.url %>" target="_blank" rel="noopener" class="text-brand-600">@<%= adminTelegram.username %></a> supaya tidak salah terima.
+            </div>
+            <button type="submit" id="paymentSubmit" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2">
+              <i class="fas fa-paper-plane text-[12.5px]"></i> Kirim Permintaan
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Edit Informasi -->
+  <div id="editInfoModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-6">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeEditInfoModal()"></div>
+    <div class="relative bg-white border border-[#dddddd] rounded-[2px] shadow-sm w-full max-w-sm">
+      <div class="px-5 py-3 border-b border-[#dddddd] flex items-center justify-between">
+        <h3 class="text-sm font-medium text-gray-800">Edit Informasi</h3>
+        <button onclick="closeEditInfoModal()" class="w-7 h-7 flex items-center justify-center rounded-[2px] text-gray-800 hover:bg-gray-100">
+          <i class="fas fa-times text-sm"></i>
+        </button>
+      </div>
+      <div class="p-5">
+        <form method="POST" action="/profile" id="editProfileForm" class="flex flex-col gap-4">
+          <!-- Email -->
+          <div>
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Alamat Email</label>
+            <input name="email" type="email" value="<%= user.email %>" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600" required>
+          </div>
+
+          <!-- Password -->
+          <div>
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Password Baru <span class="text-xs text-gray-500">(opsional)</span></label>
+            <div class="relative">
+              <input id="newPassword" name="newPassword" type="password" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 pr-10 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600" placeholder="••••••••">
+              <button type="button" id="togglePassword" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 text-gray-500 hover:text-gray-800 flex items-center justify-center">
+                <i id="toggleIcon" class="far fa-eye text-[12.5px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Nama Project -->
+          <div>
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Nama Project</label>
+            <input 
+              name="projectName" 
+              type="text" 
+              id="projectNameInput"
+              value="<%= user.projectName || '' %>" 
+              placeholder="Nama aplikasi/website Anda" 
+              class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
+            >
+          </div>
+
+          <!-- Callback URL -->
+          <div>
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Callback URL</label>
+            <input 
+              name="callbackUrl" 
+              type="url" 
+              id="callbackUrlInput"
+              value="<%= user.callbackUrl || '' %>" 
+              placeholder="https://contoh.com/webhook" 
+              class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
+            >
+            <p class="text-[11px] text-gray-500 mt-1">URL akan dipanggil saat status invoice paid.</p>
+            <p id="callbackUrlError" class="text-[11px] text-red-500 mt-1 hidden">Format URL tidak valid. Harap gunakan URL lengkap (https://...)</p>
+          </div>
+
+          <!-- Logo URL (Merchant) -->
+          <div>
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">
+              URL Logo Merchant
+              <span class="text-xs text-gray-500">(opsional)</span>
+            </label>
+            <input 
+              name="merchantLogoUrl" 
+              type="url" 
+              id="merchantLogoUrlInput"
+              value="<%= user.merchantLogoUrl || '' %>" 
+              placeholder="https://example.com/logo.png" 
+              class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600"
+            >
+            <p class="text-[11px] text-gray-500 mt-1">URL logo ditampilkan di halaman pembayaran</p>
+            <p id="merchantLogoUrlError" class="text-[11px] text-red-500 mt-1 hidden">Format URL tidak valid. Harap gunakan URL lengkap (https://...).</p>
+          </div>
+
+          <!-- API Key Field -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-[12.5px] font-medium text-gray-700">API Key</label>
+              <button type="button" onclick="regenerateApiKeyFromModal(event)" class="text-[12.5px] font-medium text-brand-600 hover:text-brand-700 transition-colors bg-transparent border-0 cursor-pointer">
+                Generate Ulang
+              </button>
+            </div>
+            <div class="flex gap-2">
+              <div class="relative flex-1">
+                <input id="modalApiKeyInput" type="password" readonly value="<%= rawApiKey %>" class="w-full border border-[#dddddd] rounded-[2px] px-3 py-3 pr-10 text-[12.5px] font-medium text-gray-800 outline-none">
+                <button type="button" id="toggleModalApiKey" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 text-gray-500 hover:text-gray-800 flex items-center justify-center">
+                  <i id="modalApiKeyToggleIcon" class="far fa-eye text-[12.5px]"></i>
+                </button>
+              </div>
+              <button type="button" onclick="copyApiKeyFromModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-3 py-3 rounded-[2px] text-[12.5px] font-medium transition-colors whitespace-nowrap" title="Salin API Key">
+                <i class="far fa-copy text-[12.5px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2">
+            <i class="fas fa-save text-[12.5px]"></i> Simpan Profil
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ================== MODAL PAYMENT ==================
+  function openPaymentModal() { document.getElementById('paymentModal').classList.remove('hidden'); }
+  function closePaymentModal() { document.getElementById('paymentModal').classList.add('hidden'); }
+  document.addEventListener('DOMContentLoaded', function() {
+    const providerSel = document.getElementById('paymentProvider');
+    const fields = document.getElementById('paymentFields');
+    const numberInput = document.getElementById('paymentNumber');
+    const paymentForm = document.getElementById('paymentForm');
+    if (providerSel && fields) {
+      providerSel.addEventListener('change', function() { fields.classList.toggle('hidden', !this.value); });
+    }
+    if (numberInput) {
+      numberInput.addEventListener('input', function() {
+        const v = this.value;
+        if (v.startsWith('+62')) this.value = '0' + v.slice(3);
+        else if (v.startsWith('62')) this.value = '0' + v.slice(2);
+      });
+    }
+    if (paymentForm) {
+      paymentForm.addEventListener('submit', function(e) {
+        const shot = document.getElementById('paymentShot');
+        if (!providerSel.value || !document.getElementById('paymentName').value.trim() || !numberInput.value.trim()) {
+          e.preventDefault(); alert('Lengkapi provider, nama, dan nomor payment.'); return;
+        }
+        if (!shot.files.length) { e.preventDefault(); alert('Screenshot profil payment wajib diunggah.'); return; }
+        if (shot.files[0].size > 4 * 1024 * 1024) { e.preventDefault(); alert('Ukuran screenshot maksimal 4 MB.'); return; }
+        const btn = document.getElementById('paymentSubmit');
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin text-[12.5px]"></i> Mengirim...';
+      });
+    }
+  });
+</script>
+
+<script>
+  // ================== GLOBAL VARIABEL ==================
+  window.rawApiKeyValue = '<%= rawApiKey.replace(/'/g, "\\'") %>';
+  let isTableApiKeyVisible = false;
+
+  // ================== MODAL EDIT INFORMASI ==================
+  function openEditInfoModal() {
+    document.getElementById('editInfoModal').classList.remove('hidden');
+    document.getElementById('modalApiKeyInput').value = window.rawApiKeyValue;
+    document.getElementById('modalApiKeyInput').type = 'password';
+    document.getElementById('modalApiKeyToggleIcon').className = 'far fa-eye text-[12.5px]';
+  }
+  function closeEditInfoModal() {
+    document.getElementById('editInfoModal').classList.add('hidden');
+  }
+
+  // ================== TOGGLE PASSWORD ==================
+  document.addEventListener('DOMContentLoaded', function() {
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('newPassword');
+    const toggleIcon = document.getElementById('toggleIcon');
+
+    if (togglePassword && passwordInput) {
+      togglePassword.addEventListener('click', function (e) {
+        e.preventDefault();
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        if (type === 'text') {
+          toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+          toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+      });
+    }
+
+    // TOGGLE API KEY DI MODAL
+    const toggleModalApiKey = document.getElementById('toggleModalApiKey');
+    const modalApiKeyInput = document.getElementById('modalApiKeyInput');
+    const modalApiKeyToggleIcon = document.getElementById('modalApiKeyToggleIcon');
+
+    if (toggleModalApiKey && modalApiKeyInput) {
+      toggleModalApiKey.addEventListener('click', function (e) {
+        e.preventDefault();
+        const type = modalApiKeyInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        modalApiKeyInput.setAttribute('type', type);
+        if (type === 'text') {
+          modalApiKeyToggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+          modalApiKeyToggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+      });
+    }
+
+    // ================== VALIDASI CALLBACK URL & LOGO URL ==================
+    const editForm = document.getElementById('editProfileForm');
+    if (editForm) {
+      editForm.addEventListener('submit', function(e) {
+        const callbackInput = document.getElementById('callbackUrlInput');
+        const callbackErrorEl = document.getElementById('callbackUrlError');
+        const merchantLogoInput = document.getElementById('merchantLogoUrlInput');
+        const merchantLogoErrorEl = document.getElementById('merchantLogoUrlError');
+        
+        // Reset error
+        callbackErrorEl.classList.add('hidden');
+        merchantLogoErrorEl.classList.add('hidden');
+
+        // Validasi callback URL jika diisi
+        if (callbackInput && callbackInput.value.trim() !== '') {
+          try {
+            const url = new URL(callbackInput.value.trim());
+            if (!['http:', 'https:'].includes(url.protocol)) {
+              throw new Error('Invalid protocol');
+            }
+          } catch (err) {
+            e.preventDefault();
+            callbackErrorEl.classList.remove('hidden');
+            callbackInput.focus();
+            return;
+          }
+        }
+
+        // Validasi logo URL jika diisi
+        if (merchantLogoInput && merchantLogoInput.value.trim() !== '') {
+          try {
+            new URL(merchantLogoInput.value.trim());
+          } catch (err) {
+            e.preventDefault();
+            merchantLogoErrorEl.classList.remove('hidden');
+            merchantLogoInput.focus();
+            return;
+          }
+        }
+      });
+    }
+  });
+
+  // ================== TOGGLE API KEY DI TABEL UTAMA ==================
+  function toggleTableApiKey() {
+    const displayEl = document.getElementById('tableApiKeyDisplay');
+    const toggleIcon = document.getElementById('tableApiKeyToggleIcon');
+    if (!displayEl || !toggleIcon) return;
+    if (isTableApiKeyVisible) {
+      displayEl.innerText = '••••••••';
+      toggleIcon.className = 'far fa-eye text-[12.5px]';
+    } else {
+      displayEl.innerText = window.rawApiKeyValue;
+      toggleIcon.className = 'far fa-eye-slash text-[12.5px]';
+    }
+    isTableApiKeyVisible = !isTableApiKeyVisible;
+  }
+
+  // ================== SALIN API KEY DARI TABEL UTAMA ==================
+  function copyTableApiKey() {
+    if (!window.rawApiKeyValue) {
+      alert('Tidak ada API Key untuk disalin.');
+      return;
+    }
+    navigator.clipboard.writeText(window.rawApiKeyValue).then(() => {
+      alert('API Key disalin ke clipboard');
+    }).catch(() => {
+      alert('Gagal menyalin');
+    });
+  }
+
+  // ================== REGENERATE API KEY ==================
+  async function regenerateApiKeyFromModal(event) {
+    const btn = event.target;
+    if (!confirm('Apakah Anda yakin ingin membuat kunci API baru? Kunci yang lama tidak akan bisa digunakan lagi dan transaksi yang berjalan bisa terhenti.')) {
+      return;
+    }
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = '...';
+    try {
+      const res = await fetch('/api/user/api-key/regenerate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (data.apiKey) {
+        window.rawApiKeyValue = data.apiKey;
+        document.getElementById('modalApiKeyInput').value = data.apiKey;
+        const displayEl = document.getElementById('tableApiKeyDisplay');
+        const toggleIcon = document.getElementById('tableApiKeyToggleIcon');
+        if (displayEl) displayEl.innerText = '••••••••';
+        if (toggleIcon) toggleIcon.className = 'far fa-eye text-[12.5px]';
+        isTableApiKeyVisible = false;
+        alert('API Key berhasil diperbarui!');
+        window.location.reload();
+      } else {
+        alert(data.error || 'Gagal generate ulang API key');
+      }
+    } catch (err) {
+      alert('Terjadi kesalahan saat generate ulang API key');
+    } finally {
+      btn.disabled = false;
+      btn.innerText = originalText;
+    }
+  }
+
+  // ================== COPY API KEY DARI MODAL ==================
+  function copyApiKeyFromModal() {
+    const input = document.getElementById('modalApiKeyInput');
+    if (!input.value) return;
+    navigator.clipboard.writeText(input.value).then(() => {
+      alert('API Key disalin ke clipboard');
+    }).catch(() => {
+      alert('Gagal menyalin');
+    });
+  }
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,146 @@
+<%- include('partials/header', { title: 'Admin Dashboard' }) %>
+
+<%
+  // Jumlah request withdraw yang masih pending (variabel 'withdrawals' dikirim dari controller)
+  const pendingWithdrawals = withdrawals.filter(w => w.status === 'pending');
+  const pendingWithdrawCount = pendingWithdrawals.length;
+%>
+
+<div class="px-4 pb-6 pt-4">
+
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-lg font-semibold text-slate-800">Ikhtisar</h1>
+    <span class="inline-flex items-center text-[13px] font-medium text-brand-600">Admin</span>
+  </div>
+
+
+  <!-- ===== Edit Statistik Terkini (tampil di halaman depan) ===== -->
+  <div class="bg-white border border-slate-200 rounded-xl overflow-hidden mb-4">
+    <div class="bg-brand-600 px-4 py-2.5 flex items-center gap-2">
+      <i class="fa-solid fa-chart-line text-white/90 text-sm"></i>
+      <span class="text-sm font-semibold text-white">Edit Statistik Terkini (Halaman Depan)</span>
+    </div>
+    <form method="POST" action="/admin/stats" class="px-4 py-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <label class="block text-[13px]">Nominal Transaksi 24 jam (Rp)
+        <input type="text" inputmode="numeric" name="statDeposit24h" value="<%= settings.statDeposit24h %>" class="mt-1 w-full px-3 py-2 text-[14px]">
+      </label>
+      <label class="block text-[13px]">Pencairan Dana 24 jam (Rp)
+        <input type="text" inputmode="numeric" name="statWithdraw24h" value="<%= settings.statWithdraw24h %>" class="mt-1 w-full px-3 py-2 text-[14px]">
+      </label>
+      <label class="block text-[13px]">Total Pengguna
+        <input type="text" inputmode="numeric" name="statTotalUsers" value="<%= settings.statTotalUsers %>" class="mt-1 w-full px-3 py-2 text-[14px]">
+      </label>
+      <label class="sm:col-span-3 flex items-center gap-2 text-[13px]">
+        <input type="checkbox" name="statsOverrideEnabled" value="1" <%= settings.statsOverrideEnabled ? 'checked' : '' %>>
+        Pakai angka manual di atas (jika dimatikan, halaman depan memakai data transaksi asli)
+      </label>
+      <div class="sm:col-span-3">
+        <button type="submit" class="bg-brand-600 text-white px-5 py-2.5 text-[14px]"><i class="fa-solid fa-floppy-disk"></i> Simpan Statistik</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Saldo Pengguna (kartu utama, sama seperti Saldo di dashboard user) -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+    <div class="bg-brand-600 px-4 py-2.5 flex items-center gap-2">
+      <i class="fa-solid fa-wallet text-white/90 text-sm"></i>
+      <span class="text-sm font-semibold text-white">Saldo Pengguna</span>
+    </div>
+    <div class="px-4 py-5">
+      <h2 class="text-3xl font-semibold text-slate-800">Rp <%= stats.totalUserBalance.toLocaleString('id-ID') %></h2>
+    </div>
+  </div>
+
+  <!-- Kartu statistik: tersusun satu kolom ke bawah -->
+  <div class="grid grid-cols-1 gap-4">
+
+    <!-- Total Pengguna -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-sky-50 border-b border-sky-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-users text-sky-600 text-sm"></i>
+        <p class="text-sm font-semibold text-sky-800 mb-0">Total Pengguna</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-1"><%= stats.totalUsers %></p>
+        <a href="/admin/users" class="inline-flex items-center gap-1 text-[13px] font-medium text-brand-600 hover:underline">
+          Kelola Pengguna <i class="fas fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Total Deposit -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-emerald-50 border-b border-emerald-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-arrow-trend-up text-emerald-600 text-sm"></i>
+        <p class="text-sm font-semibold text-emerald-800 mb-0">Total Deposit</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-0">Rp <%= stats.totalDepositAmount.toLocaleString('id-ID') %></p>
+      </div>
+    </div>
+
+    <!-- Fee TRX Masuk -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-teal-50 border-b border-teal-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-percent text-teal-600 text-sm"></i>
+        <p class="text-sm font-semibold text-teal-800 mb-0">Fee TRX Masuk</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-0">Rp <%= stats.totalDepositFee.toLocaleString('id-ID') %></p>
+      </div>
+    </div>
+
+    <!-- Total Withdraw -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-amber-50 border-b border-amber-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-arrow-trend-down text-amber-600 text-sm"></i>
+        <p class="text-sm font-semibold text-amber-800 mb-0">Total Withdraw</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-0">Rp <%= stats.totalWithdrawAmount.toLocaleString('id-ID') %></p>
+      </div>
+    </div>
+
+    <!-- Fee WD Masuk -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-orange-50 border-b border-orange-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-coins text-orange-600 text-sm"></i>
+        <p class="text-sm font-semibold text-orange-800 mb-0">Fee WD Masuk</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-0">Rp <%= stats.totalWithdrawFee.toLocaleString('id-ID') %></p>
+      </div>
+    </div>
+
+    <!-- Total Transaksi -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-violet-50 border-b border-violet-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-receipt text-violet-600 text-sm"></i>
+        <p class="text-sm font-semibold text-violet-800 mb-0">Total Transaksi</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-1"><%= stats.totalTransactions %> Transaksi</p>
+        <a href="/admin/transactions" class="inline-flex items-center gap-1 text-[13px] font-medium text-brand-600 hover:underline">
+          Lihat Semua Transaksi <i class="fas fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Request Withdraw -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-rose-50 border-b border-rose-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-clock text-rose-600 text-sm"></i>
+        <p class="text-sm font-semibold text-rose-800 mb-0">Request Withdraw</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-1"><%= pendingWithdrawCount %> Request</p>
+        <a href="/admin/withdraw" class="inline-flex items-center gap-1 text-[13px] font-medium text-brand-600 hover:underline">
+          Kelola Withdraw <i class="fas fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<%- include('partials/footer') %>

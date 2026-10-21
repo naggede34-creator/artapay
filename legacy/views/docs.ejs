@@ -1,0 +1,1153 @@
+<%- include('partials/header', { title: 'Dokumentasi API' }) %>
+<style>
+  html { scroll-behavior: smooth; }
+  [data-code-switcher] { border-color: #e2e8f0 !important; border-radius: 12px !important; box-shadow: 0 1px 2px rgba(15,23,42,.04); }
+  [data-code-switcher] pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+  [data-code-switcher] > div:first-child { background: #f8fafc !important; border-color: #e2e8f0 !important; }
+  section ul li { margin-bottom: 2px; }
+</style>
+
+
+<div class="px-4 pt-4 max-w-[480px] md:max-w-3xl mx-auto pb-6">
+
+  <%- include('partials/page_head', { title: 'Dokumentasi API', subtitle: 'Panduan integrasi API pembayaran untuk aplikasi kamu', icon: 'fa-book-open', color: 'brand' }) %>
+
+  <!-- Daftar isi -->
+  <div class="flex gap-2 overflow-x-auto custom-scroll pb-2 mb-3 -mx-1 px-1">
+    <a href="#sec-a" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"><span class="w-4 h-4 rounded bg-brand-50 text-brand-600 text-[10px] font-bold flex items-center justify-center">A</span>Persiapan</a><a href="#sec-b" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"><span class="w-4 h-4 rounded bg-brand-50 text-brand-600 text-[10px] font-bold flex items-center justify-center">B</span>Cek Saldo</a><a href="#sec-c" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"><span class="w-4 h-4 rounded bg-brand-50 text-brand-600 text-[10px] font-bold flex items-center justify-center">C</span>Buat Invoice</a><a href="#sec-d" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"><span class="w-4 h-4 rounded bg-brand-50 text-brand-600 text-[10px] font-bold flex items-center justify-center">D</span>Status Invoice</a><a href="#sec-e" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"><span class="w-4 h-4 rounded bg-brand-50 text-brand-600 text-[10px] font-bold flex items-center justify-center">E</span>Batalkan</a><a href="#sec-f" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"><span class="w-4 h-4 rounded bg-brand-50 text-brand-600 text-[10px] font-bold flex items-center justify-center">F</span>Metode WD</a><a href="#sec-g" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"><span class="w-4 h-4 rounded bg-brand-50 text-brand-600 text-[10px] font-bold flex items-center justify-center">G</span>Payment</a><a href="#sec-h" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"><span class="w-4 h-4 rounded bg-brand-50 text-brand-600 text-[10px] font-bold flex items-center justify-center">H</span>Withdraw</a><a href="#sec-i" class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[12px] font-medium text-slate-600 hover:text-brand-600 hover:border-brand-200 shadow-sm"><span class="w-4 h-4 rounded bg-brand-50 text-brand-600 text-[10px] font-bold flex items-center justify-center">I</span>Status WD</a>
+  </div>
+
+  <!-- A. Persiapan -->
+  <section id="sec-a" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+    <h2 class="flex items-center gap-2.5 text-[15px] font-semibold text-slate-800 mb-3"><span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center text-[12px] font-bold shrink-0">A</span>Persiapan</h2>
+    <p class="text-[12.5px] font-medium text-gray-700 leading-relaxed">
+      Langkah pertama yang harus kamu lakukan adalah mendaftar dan login ke dashboard. Setelah itu, dapatkan API Key kamu di menu Profil untuk mulai mengintegrasikan sistem pembayaran ke aplikasi kamu.
+    </p>
+  </section>
+
+  <!-- B. Cek Saldo -->
+  <section id="sec-b" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+    <h2 class="flex items-center gap-2.5 text-[15px] font-semibold text-slate-800 mb-3"><span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center text-[12px] font-bold shrink-0">B</span>Cek Saldo (Balance)</h2>
+
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-1 font-medium mb-4">
+      <li>Method: <span class="text-pink-600 font-medium">GET</span></li>
+      <li>URL: <span id="urlBalance" class="text-pink-600 text-[12.5px]">/api/balance</span></li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Parameter:</p>
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-4 font-medium mb-5">
+      <li><span class="text-pink-600 text-[12.5px]">apikey</span> (string, wajib)</li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Contoh Request:</p>
+    <div class="bg-white border border-gray-300 rounded-md overflow-hidden mb-4" data-code-switcher>
+      <div class="flex bg-gray-100 border-b border-gray-300 px-1 pt-1 overflow-x-scroll gap-1">
+        <button onclick="switchCodeTab(this, 'nodejs')" data-lang="nodejs" class="code-tab active flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm bg-white border border-b-0 border-gray-300 text-gray-800 -mb-px relative z-10">
+          <i class="fab fa-node-js text-green-600 text-sm"></i> Node.js
+        </button>
+        <button onclick="switchCodeTab(this, 'python')" data-lang="python" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-python text-brand-600 text-sm"></i> Python
+        </button>
+        <button onclick="switchCodeTab(this, 'curl')" data-lang="curl" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fas fa-terminal text-gray-500 text-sm"></i> cURL
+        </button>
+        <button onclick="switchCodeTab(this, 'php')" data-lang="php" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-php text-indigo-500 text-sm"></i> PHP
+        </button>
+      </div>
+      <div class="relative bg-gray-50 p-3 group">
+        <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer z-10" title="Salin">
+          <i class="far fa-copy text-sm"></i>
+        </button>
+        <pre class="text-[12.5px] text-gray-800 whitespace-pre-wrap font-medium break-all leading-relaxed"><code class="copy-content" data-code="nodejs">const axios = require('axios');
+axios.get('<span class="base-url-placeholder">BASE_URL</span>/api/balance?apikey=YOUR_API_KEY')
+  .then(response => console.log(response.data));
+
+/*
+Contoh response:
+{
+  "username": "your_username", 
+  "email": "name@gmail.com", 
+  "balance": 150000
+}
+*/</code><code class="copy-content hidden" data-code="python">import requests
+response = requests.get('<span class="base-url-placeholder">BASE_URL</span>/api/balance?apikey=YOUR_API_KEY')
+print(response.json())
+
+"""
+Contoh response:
+{
+  "username": "your_username", 
+  "email": "name@gmail.com", 
+  "balance": 150000
+}
+"""</code><code class="copy-content hidden" data-code="curl">curl -X GET '<span class="base-url-placeholder">BASE_URL</span>/api/balance?apikey=YOUR_API_KEY'
+
+# Contoh response:
+# {
+#   "balance": 150000
+# }</code><code class="copy-content hidden" data-code="php">&lt;?php
+$response = file_get_contents('<span class="base-url-placeholder">BASE_URL</span>/api/balance?apikey=YOUR_API_KEY');
+echo $response;
+
+/*
+Contoh response:
+{
+  "username": "your_username", 
+  "email": "name@gmail.com", 
+  "balance": 150000
+}
+*/
+?&gt;</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- C. Membuat Invoice Baru -->
+  <section id="sec-c" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+    <h2 class="flex items-center gap-2.5 text-[15px] font-semibold text-slate-800 mb-3"><span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center text-[12px] font-bold shrink-0">C</span>Membuat Invoice</h2>
+
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-1 font-medium mb-4">
+      <li>Method: <span class="text-pink-600 font-medium">GET</span></li>
+      <li>URL: <span id="urlInvoice" class="text-pink-600 bg-gray-50 px-1.5 py-0.5 rounded border font-medium border-gray-200 text-[12.5px]">/api/invoice</span></li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Parameter:</p>
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-4 font-medium mb-5">
+      <li><span class="text-pink-600 text-[12.5px]">apikey</span> (string, wajib)</li>
+      <li><span class="text-pink-600 text-[12.5px]">amount</span> (integer, wajib) </li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Contoh Request:</p>
+    <div class="bg-white border border-gray-300 rounded-md overflow-hidden mb-4" data-code-switcher>
+      <div class="flex bg-gray-100 border-b border-gray-300 px-1 pt-1 overflow-x-scroll gap-1">
+        <button onclick="switchCodeTab(this, 'nodejs')" data-lang="nodejs" class="code-tab active flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm bg-white border border-b-0 border-gray-300 text-gray-800 -mb-px relative z-10">
+          <i class="fab fa-node-js text-green-600 text-sm"></i> Node.js
+        </button>
+        <button onclick="switchCodeTab(this, 'python')" data-lang="python" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-python text-brand-600 text-sm"></i> Python
+        </button>
+        <button onclick="switchCodeTab(this, 'curl')" data-lang="curl" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fas fa-terminal text-gray-500 text-sm"></i> cURL
+        </button>
+        <button onclick="switchCodeTab(this, 'php')" data-lang="php" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-php text-indigo-500 text-sm"></i> PHP
+        </button>
+      </div>
+      <div class="relative bg-gray-50 p-3 group">
+        <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer z-10" title="Salin">
+          <i class="far fa-copy text-sm"></i>
+        </button>
+        <pre class="text-[12.5px] text-gray-800 whitespace-pre-wrap font-medium break-all leading-relaxed"><code class="copy-content" data-code="nodejs">const axios = require('axios');
+axios.get('<span class="base-url-placeholder">BASE_URL</span>/api/invoice?apikey=YOUR_API_KEY&amount=50000')
+  .then(response => console.log(response.data));
+
+/*
+Contoh response:
+{
+  "success": true,
+  "invoice_id": "64c8d9e...",
+  "amount": 50000,
+  "fee": 500,
+  "total": 50500,
+  "qris_image": "https://...",
+  "payment_link": "https://...", 
+  "expired_at": "2025-01-01 12:00:00"
+}
+*/</code><code class="copy-content hidden" data-code="python">import requests
+response = requests.get('<span class="base-url-placeholder">BASE_URL</span>/api/invoice?apikey=YOUR_API_KEY&amount=50000')
+print(response.json())
+
+"""
+Contoh response:
+{
+  "success": true,
+  "invoice_id": "64c8d9e...",
+  "amount": 50000,
+  "fee": 500,
+  "total": 50500,
+  "qris_image": "https://...",
+  "payment_link": "https://...", 
+  "expired_at": "2025-01-01 12:00:00"
+}
+"""</code><code class="copy-content hidden" data-code="curl">curl -X GET '<span class="base-url-placeholder">BASE_URL</span>/api/invoice?apikey=YOUR_API_KEY&amount=50000'
+
+# Contoh response:
+# {
+#   "success": true,
+#   "invoice_id": "64c8d9e...",
+#   "amount": 50000,
+#   "fee": 500,
+#   "total": 50500,
+#   "qris_image": "https://...",
+#   "payment_link": "https://...", 
+#   "expired_at": "2025-01-01 12:00:00"
+# }</code><code class="copy-content hidden" data-code="php">&lt;?php
+$response = file_get_contents('<span class="base-url-placeholder">BASE_URL</span>/api/invoice?apikey=YOUR_API_KEY&amount=50000');
+echo $response;
+
+/*
+Contoh response:
+{
+  "success": true,
+  "invoice_id": "64c8d9e...",
+  "amount": 50000,
+  "fee": 500,
+  "total": 50500,
+  "qris_image": "https://...",
+  "payment_link": "https://...", 
+  "expired_at": "2025-01-01 12:00:00"
+}
+*/
+?&gt;</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- D. Cek Status Invoice -->
+  <section id="sec-d" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+    <h2 class="flex items-center gap-2.5 text-[15px] font-semibold text-slate-800 mb-3"><span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center text-[12px] font-bold shrink-0">D</span>Cek Status Invoice</h2>
+
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-1 font-medium mb-4">
+      <li>Method: <span class="text-pink-600 font-medium">GET</span></li>
+      <li>URL: <span id="urlStatus" class="text-pink-600 text-[12.5px]">/api/invoice/status</span></li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Parameter:</p>
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-4 font-medium mb-5">
+      <li><span class="text-pink-600 text-[12.5px]">apikey</span> (string, wajib)</li>
+      <li><span class="text-pink-600 text-[12.5px]">invoice_id</span> (string, wajib)</li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Nilai <span class="text-pink-600">status</span>: <span class="text-pink-600">pending</span>, <span class="text-pink-600">paid</span>, <span class="text-pink-600">expired</span>, <span class="text-pink-600">cancelled</span>.</p>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Contoh Request:</p>
+    <div class="bg-white border border-gray-300 rounded-md overflow-hidden mb-4" data-code-switcher>
+      <div class="flex bg-gray-100 border-b border-gray-300 px-1 pt-1 overflow-x-scroll gap-1">
+        <button onclick="switchCodeTab(this, 'nodejs')" data-lang="nodejs" class="code-tab active flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm bg-white border border-b-0 border-gray-300 text-gray-800 -mb-px relative z-10">
+          <i class="fab fa-node-js text-green-600 text-sm"></i> Node.js
+        </button>
+        <button onclick="switchCodeTab(this, 'python')" data-lang="python" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-python text-brand-600 text-sm"></i> Python
+        </button>
+        <button onclick="switchCodeTab(this, 'curl')" data-lang="curl" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fas fa-terminal text-gray-500 text-sm"></i> cURL
+        </button>
+        <button onclick="switchCodeTab(this, 'php')" data-lang="php" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-php text-indigo-500 text-sm"></i> PHP
+        </button>
+      </div>
+      <div class="relative bg-gray-50 p-3 group">
+        <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer z-10" title="Salin">
+          <i class="far fa-copy text-sm"></i>
+        </button>
+        <pre class="text-[12.5px] text-gray-800 whitespace-pre-wrap font-medium break-all leading-relaxed"><code class="copy-content" data-code="nodejs">const axios = require('axios');
+axios.get('<span class="base-url-placeholder">BASE_URL</span>/api/invoice/status?apikey=YOUR_API_KEY&invoice_id=YOUR_INVOICE_ID')
+  .then(response => console.log(response.data));
+
+/*
+Contoh response:
+{
+  "invoice_id": "64c8d9e...",
+  "amount": 50000,
+  "fee": 500,
+  "total": 50500,
+  "status": "paid",
+  "qris_image": "https://...",
+  "payment_link": "https://...",   
+  "expired_at": "2025-01-01 12:00:00",
+  "created_at": "2025-01-01 11:30:00"
+}
+*/</code><code class="copy-content hidden" data-code="python">import requests
+response = requests.get('<span class="base-url-placeholder">BASE_URL</span>/api/invoice/status?apikey=YOUR_API_KEY&invoice_id=YOUR_INVOICE_ID')
+print(response.json())
+
+"""
+Contoh response:
+{
+  "invoice_id": "64c8d9e...",
+  "amount": 50000,
+  "fee": 500,
+  "total": 50500,
+  "status": "paid",
+  "qris_image": "https://...",
+  "payment_link": "https://...",   
+  "expired_at": "2025-01-01 12:00:00",
+  "created_at": "2025-01-01 11:30:00"
+}
+"""</code><code class="copy-content hidden" data-code="curl">curl -X GET '<span class="base-url-placeholder">BASE_URL</span>/api/invoice/status?apikey=YOUR_API_KEY&invoice_id=YOUR_INVOICE_ID'
+
+# Contoh response:
+# {
+#   "invoice_id": "64c8d9e...",
+#   "amount": 50000,
+#   "fee": 500,
+#   "total": 50500,
+#   "status": "paid",
+#   "qris_image": "https://...",
+#   "payment_link": "https://...",   
+#   "expired_at": "2025-01-01 12:00:00",
+#   "created_at": "2025-01-01 11:30:00"
+# }</code><code class="copy-content hidden" data-code="php">&lt;?php
+$response = file_get_contents('<span class="base-url-placeholder">BASE_URL</span>/api/invoice/status?apikey=YOUR_API_KEY&invoice_id=YOUR_INVOICE_ID');
+echo $response;
+
+/*
+Contoh response:
+{
+  "invoice_id": "64c8d9e...",
+  "amount": 50000,
+  "fee": 500,
+  "total": 50500,
+  "status": "paid",
+  "qris_image": "https://...",
+  "payment_link": "https://...",   
+  "expired_at": "2025-01-01 12:00:00",
+  "created_at": "2025-01-01 11:30:00"
+}
+*/
+?&gt;</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- E. Batalkan Invoice -->
+  <section id="sec-e" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+    <h2 class="flex items-center gap-2.5 text-[15px] font-semibold text-slate-800 mb-3"><span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center text-[12px] font-bold shrink-0">E</span>Batalkan Invoice</h2>
+
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-1 font-medium mb-4">
+      <li>Method: <span class="text-pink-600 font-medium">POST</span> (GET juga didukung)</li>
+      <li>URL: <span id="urlCancel" class="text-pink-600 text-[12.5px]">/api/invoice/cancel</span></li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Parameter:</p>
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-4 font-medium mb-5">
+      <li><span class="text-pink-600 text-[12.5px]">apikey</span> (string, wajib)</li>
+      <li><span class="text-pink-600 text-[12.5px]">invoice_id</span> (string, wajib)</li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Catatan:</p>
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-4 font-medium mb-5">
+      <li>Hanya invoice berstatus <span class="text-pink-600">pending</span> yang bisa dibatalkan. Invoice <span class="text-pink-600">paid</span>, <span class="text-pink-600">expired</span>, atau yang sudah <span class="text-pink-600">cancelled</span> ditolak dengan HTTP 400.</li>
+      <li>Pembatalan hanya berlaku di sistem kami dan tidak menghubungi penyedia pembayaran. Pastikan pelanggan tidak membayar QR yang sudah dibatalkan.</li>
+      <li>Setelah dibatalkan, status invoice menjadi <span class="text-pink-600">cancelled</span> dan halaman <span class="text-pink-600">payment_link</span> menampilkan transaksi dibatalkan.</li>
+      <li>Jika <span class="text-pink-600">callback_url</span> diisi, event <span class="text-pink-600">deposit.cancelled</span> dikirim ke URL tersebut.</li>
+      <li>Invoice yang tidak ditemukan atau bukan milik API key tersebut mengembalikan HTTP 404.</li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Contoh Request:</p>
+    <div class="bg-white border border-gray-300 rounded-md overflow-hidden mb-4" data-code-switcher>
+      <div class="flex bg-gray-100 border-b border-gray-300 px-1 pt-1 overflow-x-scroll gap-1">
+        <button onclick="switchCodeTab(this, 'nodejs')" data-lang="nodejs" class="code-tab active flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm bg-white border border-b-0 border-gray-300 text-gray-800 -mb-px relative z-10">
+          <i class="fab fa-node-js text-green-600 text-sm"></i> Node.js
+        </button>
+        <button onclick="switchCodeTab(this, 'python')" data-lang="python" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-python text-brand-600 text-sm"></i> Python
+        </button>
+        <button onclick="switchCodeTab(this, 'curl')" data-lang="curl" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fas fa-terminal text-gray-500 text-sm"></i> cURL
+        </button>
+        <button onclick="switchCodeTab(this, 'php')" data-lang="php" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-php text-indigo-500 text-sm"></i> PHP
+        </button>
+      </div>
+      <div class="relative bg-gray-50 p-3 group">
+        <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer z-10" title="Salin">
+          <i class="far fa-copy text-sm"></i>
+        </button>
+        <pre class="text-[12.5px] text-gray-800 whitespace-pre-wrap font-medium break-all leading-relaxed"><code class="copy-content" data-code="nodejs">const axios = require('axios');
+axios.post('<span class="base-url-placeholder">BASE_URL</span>/api/invoice/cancel?apikey=YOUR_API_KEY&amp;invoice_id=YOUR_INVOICE_ID')
+  .then(response => console.log(response.data))
+  .catch(error => console.log(error.response.data));
+
+/*
+Contoh response sukses:
+{
+  "success": true,
+  "invoice_id": "INV1a2b3c4d5e",
+  "amount": 50000,
+  "fee": 500,
+  "total": 50500,
+  "status": "cancelled"
+}
+
+Contoh response gagal (status bukan pending):
+{
+  "success": false,
+  "error": "Invoice berstatus paid tidak bisa dibatalkan",
+  "status": "paid"
+}
+*/</code><code class="copy-content hidden" data-code="python">import requests
+response = requests.post('<span class="base-url-placeholder">BASE_URL</span>/api/invoice/cancel?apikey=YOUR_API_KEY&amp;invoice_id=YOUR_INVOICE_ID')
+print(response.json())
+
+"""
+Contoh response sukses:
+{
+  "success": true,
+  "invoice_id": "INV1a2b3c4d5e",
+  "amount": 50000,
+  "fee": 500,
+  "total": 50500,
+  "status": "cancelled"
+}
+
+Contoh response gagal (status bukan pending):
+{
+  "success": false,
+  "error": "Invoice berstatus paid tidak bisa dibatalkan",
+  "status": "paid"
+}
+"""</code><code class="copy-content hidden" data-code="curl">curl -X POST '<span class="base-url-placeholder">BASE_URL</span>/api/invoice/cancel?apikey=YOUR_API_KEY&amp;invoice_id=YOUR_INVOICE_ID'
+
+# Contoh response sukses:
+# {
+#   "success": true,
+#   "invoice_id": "INV1a2b3c4d5e",
+#   "amount": 50000,
+#   "fee": 500,
+#   "total": 50500,
+#   "status": "cancelled"
+# }
+
+# Contoh response gagal (status bukan pending):
+# {
+#   "success": false,
+#   "error": "Invoice berstatus paid tidak bisa dibatalkan",
+#   "status": "paid"
+# }</code><code class="copy-content hidden" data-code="php">&lt;?php
+$context = stream_context_create(['http' => ['method' => 'POST', 'ignore_errors' => true]]);
+$response = file_get_contents('<span class="base-url-placeholder">BASE_URL</span>/api/invoice/cancel?apikey=YOUR_API_KEY&amp;invoice_id=YOUR_INVOICE_ID', false, $context);
+echo $response;
+
+/*
+Contoh response sukses:
+{
+  "success": true,
+  "invoice_id": "INV1a2b3c4d5e",
+  "amount": 50000,
+  "fee": 500,
+  "total": 50500,
+  "status": "cancelled"
+}
+
+Contoh response gagal (status bukan pending):
+{
+  "success": false,
+  "error": "Invoice berstatus paid tidak bisa dibatalkan",
+  "status": "paid"
+}
+*/
+?&gt;</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- F. Lihat Metode Withdraw -->
+  <section id="sec-f" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+    <h2 class="flex items-center gap-2.5 text-[15px] font-semibold text-slate-800 mb-3"><span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center text-[12px] font-bold shrink-0">F</span>Lihat Metode Withdraw</h2>
+
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-1 font-medium mb-4">
+      <li>Method: <span class="text-pink-600 font-medium">GET</span></li>
+      <li>URL: <span id="urlWithdrawMethods" class="text-pink-600 text-[12.5px]">/api/withdraw/methods</span></li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Parameter:</p>
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-4 font-medium mb-5">
+      <li><span class="text-pink-600 text-[12.5px]">apikey</span> (string, wajib)</li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Contoh Request:</p>
+    <div class="bg-white border border-gray-300 rounded-md overflow-hidden mb-4" data-code-switcher>
+      <div class="flex bg-gray-100 border-b border-gray-300 px-1 pt-1 overflow-x-scroll gap-1">
+        <button onclick="switchCodeTab(this, 'nodejs')" data-lang="nodejs" class="code-tab active flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm bg-white border border-b-0 border-gray-300 text-gray-800 -mb-px relative z-10">
+          <i class="fab fa-node-js text-green-600 text-sm"></i> Node.js
+        </button>
+        <button onclick="switchCodeTab(this, 'python')" data-lang="python" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-python text-brand-600 text-sm"></i> Python
+        </button>
+        <button onclick="switchCodeTab(this, 'curl')" data-lang="curl" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fas fa-terminal text-gray-500 text-sm"></i> cURL
+        </button>
+        <button onclick="switchCodeTab(this, 'php')" data-lang="php" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-php text-indigo-500 text-sm"></i> PHP
+        </button>
+      </div>
+      <div class="relative bg-gray-50 p-3 group">
+        <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer z-10" title="Salin">
+          <i class="far fa-copy text-sm"></i>
+        </button>
+        <pre class="text-[12.5px] text-gray-800 whitespace-pre-wrap font-medium break-all leading-relaxed"><code class="copy-content" data-code="nodejs">const axios = require('axios');
+axios.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/methods?apikey=YOUR_API_KEY')
+  .then(response => console.log(response.data));
+
+/*
+Contoh response:
+{
+  "manual_methods": [
+    {
+      "name": "Dana",
+      "method": "dana",      
+      "fee": 100,
+      "min": 10000,
+      "max": 1000000
+    }
+  ],
+  "instant_methods": [
+    {
+      "name": "Dana",
+      "method": "dana",
+      "fee": 100,
+      "min": 10000,
+      "max": 1000000
+    }
+  ]
+}
+*/</code><code class="copy-content hidden" data-code="python">import requests
+response = requests.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/methods?apikey=YOUR_API_KEY')
+print(response.json())
+
+"""
+Contoh response:
+{
+  "manual_methods": [
+    {
+      "name": "Dana",
+      "method": "dana",      
+      "fee": 100,
+      "min": 10000,
+      "max": 1000000
+    }
+  ],
+  "instant_methods": [
+    {
+      "name": "Dana",
+      "method": "dana",
+      "fee": 100,
+      "min": 10000,
+      "max": 1000000
+    }
+  ]
+}
+"""</code><code class="copy-content hidden" data-code="curl">curl -X GET '<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/methods?apikey=YOUR_API_KEY'
+
+# Contoh response:
+# {
+#   "manual_methods": [
+#     {
+#       "name": "Dana",
+#       "method": "dana",      
+#       "fee": 100,
+#       "min": 10000,
+#       "max": 1000000
+#     }
+#   ],
+#   "instant_methods": [
+#     {
+#       "name": "Dana",
+#       "method": "dana",
+#       "fee": 100,
+#       "min": 10000,
+#       "max": 1000000
+#     }
+#   ]
+# }</code><code class="copy-content hidden" data-code="php">&lt;?php
+$response = file_get_contents('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/methods?apikey=YOUR_API_KEY');
+echo $response;
+
+/*
+Contoh response:
+{
+  "manual_methods": [
+    {
+      "name": "Dana",
+      "method": "dana",      
+      "fee": 100,
+      "min": 10000,
+      "max": 1000000
+    }
+  ],
+  "instant_methods": [
+    {
+      "name": "Dana",
+      "method": "dana",
+      "fee": 100,
+      "min": 10000,
+      "max": 1000000
+    }
+  ]
+}
+*/
+?&gt;</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- G. Lihat Payment Tersimpan -->
+  <section id="sec-g" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+    <h2 class="flex items-center gap-2.5 text-[15px] font-semibold text-slate-800 mb-3"><span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center text-[12px] font-bold shrink-0">G</span>Lihat Payment Tersimpan</h2>
+
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-1 font-medium mb-4">
+      <li>Method: <span class="text-pink-600 font-medium">GET</span></li>
+      <li>URL: <span id="urlWithdrawPayments" class="text-pink-600 text-[12.5px]">/api/withdraw/payments</span></li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-700 font-medium mb-4">Tampilkan daftar payment milik akun ini sebagai list. Pakai <span class="text-pink-600 text-[12.5px]">id</span> sebagai <span class="text-pink-600 text-[12.5px]">payment_id</span> saat withdraw. Payment hanya bisa ditambah atau diubah lewat halaman Profil di website.</p>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Parameter:</p>
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-4 font-medium mb-5">
+      <li><span class="text-pink-600 text-[12.5px]">apikey</span> (string, wajib)</li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Contoh Request:</p>
+    <div class="bg-white border border-gray-300 rounded-md overflow-hidden mb-4" data-code-switcher>
+      <div class="flex bg-gray-100 border-b border-gray-300 px-1 pt-1 overflow-x-scroll gap-1">
+        <button onclick="switchCodeTab(this, 'nodejs')" data-lang="nodejs" class="code-tab active flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm bg-white border border-b-0 border-gray-300 text-gray-800 -mb-px relative z-10">
+          <i class="fab fa-node-js text-green-600 text-sm"></i> Node.js
+        </button>
+        <button onclick="switchCodeTab(this, 'python')" data-lang="python" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-python text-brand-600 text-sm"></i> Python
+        </button>
+        <button onclick="switchCodeTab(this, 'curl')" data-lang="curl" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fas fa-terminal text-gray-500 text-sm"></i> cURL
+        </button>
+        <button onclick="switchCodeTab(this, 'php')" data-lang="php" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-php text-indigo-500 text-sm"></i> PHP
+        </button>
+      </div>
+      <div class="relative bg-gray-50 p-3 group">
+        <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer z-10" title="Salin">
+          <i class="far fa-copy text-sm"></i>
+        </button>
+        <pre class="text-[12.5px] text-gray-800 whitespace-pre-wrap font-medium break-all leading-relaxed"><code class="copy-content" data-code="nodejs">const axios = require('axios');
+axios.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/payments?apikey=YOUR_API_KEY')
+  .then(response => console.log(response.data));
+
+/*
+Contoh response:
+{
+  "success": true,
+  "total": 2,
+  "payments": [
+    {
+      "id": "PAYa1b2c3d4e5",
+      "provider": "Dana",
+      "account_name": "ARTA PEDIA PAY",
+      "account_number": "08123456789",
+      "manual": { "available": true, "fee": 1000, "min": 10000, "max": 1000000 },
+      "instant": { "available": true, "fee": 1000, "min": 10000, "max": 1000000 }
+    },
+    {
+      "id": "PAYf6e5d4c3b2",
+      "provider": "GoPay",
+      "account_name": "ARTA PEDIA PAY",
+      "account_number": "08129876543",
+      "manual": { "available": true, "fee": 2000, "min": 10000, "max": 1000000 },
+      "instant": { "available": false }
+    }
+  ]
+}
+*/</code><code class="copy-content hidden" data-code="python">import requests
+response = requests.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/payments?apikey=YOUR_API_KEY')
+print(response.json())
+
+"""
+Contoh response:
+{
+  "success": true,
+  "total": 2,
+  "payments": [
+    {
+      "id": "PAYa1b2c3d4e5",
+      "provider": "Dana",
+      "account_name": "ARTA PEDIA PAY",
+      "account_number": "08123456789",
+      "manual": { "available": true, "fee": 1000, "min": 10000, "max": 1000000 },
+      "instant": { "available": true, "fee": 1000, "min": 10000, "max": 1000000 }
+    },
+    {
+      "id": "PAYf6e5d4c3b2",
+      "provider": "GoPay",
+      "account_name": "ARTA PEDIA PAY",
+      "account_number": "08129876543",
+      "manual": { "available": true, "fee": 2000, "min": 10000, "max": 1000000 },
+      "instant": { "available": false }
+    }
+  ]
+}
+"""</code><code class="copy-content hidden" data-code="curl">curl -X GET '<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/payments?apikey=YOUR_API_KEY'
+
+# Contoh response:
+# {
+#   "success": true,
+#   "total": 2,
+#   "payments": [
+#     {
+#       "id": "PAYa1b2c3d4e5",
+#       "provider": "Dana",
+#       "account_name": "ARTA PEDIA PAY",
+#       "account_number": "08123456789",
+#       "manual": { "available": true, "fee": 1000, "min": 10000, "max": 1000000 },
+#       "instant": { "available": true, "fee": 1000, "min": 10000, "max": 1000000 }
+#     },
+#     {
+#       "id": "PAYf6e5d4c3b2",
+#       "provider": "GoPay",
+#       "account_name": "ARTA PEDIA PAY",
+#       "account_number": "08129876543",
+#       "manual": { "available": true, "fee": 2000, "min": 10000, "max": 1000000 },
+#       "instant": { "available": false }
+#     }
+#   ]
+# }</code><code class="copy-content hidden" data-code="php">&lt;?php
+$response = file_get_contents('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/payments?apikey=YOUR_API_KEY');
+echo $response;
+
+/*
+Contoh response:
+{
+  "success": true,
+  "total": 2,
+  "payments": [
+    {
+      "id": "PAYa1b2c3d4e5",
+      "provider": "Dana",
+      "account_name": "ARTA PEDIA PAY",
+      "account_number": "08123456789",
+      "manual": { "available": true, "fee": 1000, "min": 10000, "max": 1000000 },
+      "instant": { "available": true, "fee": 1000, "min": 10000, "max": 1000000 }
+    },
+    {
+      "id": "PAYf6e5d4c3b2",
+      "provider": "GoPay",
+      "account_name": "ARTA PEDIA PAY",
+      "account_number": "08129876543",
+      "manual": { "available": true, "fee": 2000, "min": 10000, "max": 1000000 },
+      "instant": { "available": false }
+    }
+  ]
+}
+*/
+?&gt;</code></pre>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- G. Melakukan Withdraw -->
+  <section id="sec-h" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+    <h2 class="flex items-center gap-2.5 text-[15px] font-semibold text-slate-800 mb-3"><span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center text-[12px] font-bold shrink-0">H</span>Melakukan Withdraw</h2>
+
+    <p class="text-[12.5px] text-gray-700 font-medium mb-4">Withdraw hanya bisa ke payment yang sudah terdaftar dan disetujui admin lewat halaman Profil. Tujuan tidak bisa diisi manual, jadi meski API key bocor dana tidak bisa ditarik ke rekening lain.</p>
+
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-1 font-medium mb-4">
+      <li>Method: <span class="text-pink-600 font-medium">GET</span></li>
+      <li>URL: <span id="urlWithdraw" class="text-pink-600 text-[12.5px]">/api/withdraw</span></li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Parameter:</p>
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-4 font-medium mb-5">
+      <li><span class="text-pink-600 text-[12.5px]">apikey</span> (string, wajib)</li>
+      <li><span class="text-pink-600 text-[12.5px]">amount</span> (integer, wajib)</li>
+      <li><span class="text-pink-600 text-[12.5px]">payment_id</span> (string, wajib) – ID payment dari <span class="text-pink-600 text-[12.5px]">/api/withdraw/payments</span></li>
+      <li><span class="text-pink-600 text-[12.5px]">instant</span> (boolean, opsional, default false)</li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Contoh Request Manual:</p>
+    <div class="bg-white border border-gray-300 rounded-md overflow-hidden mb-4" data-code-switcher>
+      <div class="flex bg-gray-100 border-b border-gray-300 px-1 pt-1 overflow-x-scroll gap-1">
+        <button onclick="switchCodeTab(this, 'nodejs')" data-lang="nodejs" class="code-tab active flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm bg-white border border-b-0 border-gray-300 text-gray-800 -mb-px relative z-10">
+          <i class="fab fa-node-js text-green-600 text-sm"></i> Node.js
+        </button>
+        <button onclick="switchCodeTab(this, 'python')" data-lang="python" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-python text-brand-600 text-sm"></i> Python
+        </button>
+        <button onclick="switchCodeTab(this, 'curl')" data-lang="curl" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fas fa-terminal text-gray-500 text-sm"></i> cURL
+        </button>
+        <button onclick="switchCodeTab(this, 'php')" data-lang="php" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-php text-indigo-500 text-sm"></i> PHP
+        </button>
+      </div>
+      <div class="relative bg-gray-50 p-3 group">
+        <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer z-10" title="Salin">
+          <i class="far fa-copy text-sm"></i>
+        </button>
+        <pre class="text-[12.5px] text-gray-800 whitespace-pre-wrap font-medium break-all leading-relaxed"><code class="copy-content" data-code="nodejs">const axios = require('axios');
+axios.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw?apikey=YOUR_API_KEY&amount=50000&payment_id=PAYa1b2c3d4e5&instant=false')
+  .then(response => console.log(response.data));
+
+/*
+Contoh response sukses (manual):
+{
+  "success": true,
+  "message": "Permintaan penarikan berhasil diajukan.",
+  "data": {
+    "id": "WDc4e3f2a1b2c3",
+    "amount": 50000,
+    "fee": 1000,
+    "payment_id": "PAYa1b2c3d4e5",
+    "method": "Dana",
+    "account_name": "ARTA PEDIA PAY",
+    "account_number": "08123456789",
+    "status": "pending",
+    "created_at": "2025-01-01T12:00:00.000Z"
+  }
+}
+*/</code><code class="copy-content hidden" data-code="python">import requests
+response = requests.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw?apikey=YOUR_API_KEY&amount=50000&payment_id=PAYa1b2c3d4e5&instant=false')
+print(response.json())
+
+"""
+Contoh response sukses (manual):
+{
+  "success": true,
+  "message": "Permintaan penarikan berhasil diajukan.",
+  "data": {
+    "id": "WDc4e3f2a1b2c3",
+    "amount": 50000,
+    "fee": 1000,
+    "payment_id": "PAYa1b2c3d4e5",
+    "method": "Dana",
+    "account_name": "ARTA PEDIA PAY",
+    "account_number": "08123456789",
+    "status": "pending",
+    "created_at": "2025-01-01T12:00:00.000Z"
+  }
+}
+"""</code><code class="copy-content hidden" data-code="curl">curl -X GET '<span class="base-url-placeholder">BASE_URL</span>/api/withdraw?apikey=YOUR_API_KEY&amount=50000&payment_id=PAYa1b2c3d4e5&instant=false'
+
+# Contoh response sukses (manual):
+# {
+#   "success": true,
+#   "message": "Permintaan penarikan berhasil diajukan.",
+#   "data": {
+#     "id": "WDc4e3f2a1b2c3",
+#     "amount": 50000,
+#     "fee": 1000,
+#     "payment_id": "PAYa1b2c3d4e5",
+#     "method": "Dana",
+#     "account_name": "ARTA PEDIA PAY",
+#     "account_number": "08123456789",
+#     "status": "pending",
+#     "created_at": "2025-01-01T12:00:00.000Z"
+#   }
+# }</code><code class="copy-content hidden" data-code="php">&lt;?php
+$response = file_get_contents('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw?apikey=YOUR_API_KEY&amount=50000&payment_id=PAYa1b2c3d4e5&instant=false');
+echo $response;
+
+/*
+Contoh response sukses (manual):
+{
+  "success": true,
+  "message": "Permintaan penarikan berhasil diajukan.",
+  "data": {
+    "id": "WDc4e3f2a1b2c3",
+    "amount": 50000,
+    "fee": 1000,
+    "payment_id": "PAYa1b2c3d4e5",
+    "method": "Dana",
+    "account_name": "ARTA PEDIA PAY",
+    "account_number": "08123456789",
+    "status": "pending",
+    "created_at": "2025-01-01T12:00:00.000Z"
+  }
+}
+*/
+?&gt;</code></pre>
+      </div>
+    </div>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Contoh Request Instan:</p>
+    <div class="bg-white border border-gray-300 rounded-md overflow-hidden mb-4" data-code-switcher>
+      <div class="flex bg-gray-100 border-b border-gray-300 px-1 pt-1 overflow-x-scroll gap-1">
+        <button onclick="switchCodeTab(this, 'nodejs')" data-lang="nodejs" class="code-tab active flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm bg-white border border-b-0 border-gray-300 text-gray-800 -mb-px relative z-10">
+          <i class="fab fa-node-js text-green-600 text-sm"></i> Node.js
+        </button>
+        <button onclick="switchCodeTab(this, 'python')" data-lang="python" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-python text-brand-600 text-sm"></i> Python
+        </button>
+        <button onclick="switchCodeTab(this, 'curl')" data-lang="curl" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fas fa-terminal text-gray-500 text-sm"></i> cURL
+        </button>
+        <button onclick="switchCodeTab(this, 'php')" data-lang="php" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-php text-indigo-500 text-sm"></i> PHP
+        </button>
+      </div>
+      <div class="relative bg-gray-50 p-3 group">
+        <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer z-10" title="Salin">
+          <i class="far fa-copy text-sm"></i>
+        </button>
+        <pre class="text-[12.5px] text-gray-800 whitespace-pre-wrap font-medium break-all leading-relaxed"><code class="copy-content" data-code="nodejs">const axios = require('axios');
+axios.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw?apikey=YOUR_API_KEY&amount=20000&payment_id=PAYf6e5d4c3b2&instant=true')
+  .then(response => console.log(response.data));
+
+/*
+Contoh response sukses (instant):
+{
+  "success": true,
+  "message": "Permintaan withdraw instan sedang diproses.",
+  "data": {
+    "id": "WDf3a1b2c3d4e5",
+    "amount": 20000,
+    "fee": 2000,
+    "payment_id": "PAYf6e5d4c3b2",
+    "method": "GoPay",
+    "account_name": "ARTA PEDIA PAY",
+    "account_number": "08129876543",
+    "status": "pending",
+    "created_at": "2025-01-01T12:05:00.000Z"
+  }
+}
+*/</code><code class="copy-content hidden" data-code="python">import requests
+response = requests.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw?apikey=YOUR_API_KEY&amount=20000&payment_id=PAYf6e5d4c3b2&instant=true')
+print(response.json())
+
+"""
+Contoh response sukses (instant):
+{
+  "success": true,
+  "message": "Permintaan withdraw instan sedang diproses.",
+  "data": {
+    "id": "WDf3a1b2c3d4e5",
+    "amount": 20000,
+    "fee": 2000,
+    "payment_id": "PAYf6e5d4c3b2",
+    "method": "GoPay",
+    "account_name": "ARTA PEDIA PAY",
+    "account_number": "08129876543",
+    "status": "pending",
+    "created_at": "2025-01-01T12:05:00.000Z"
+  }
+}
+"""</code><code class="copy-content hidden" data-code="curl">curl -X GET '<span class="base-url-placeholder">BASE_URL</span>/api/withdraw?apikey=YOUR_API_KEY&amount=20000&payment_id=PAYf6e5d4c3b2&instant=true'
+
+# Contoh response sukses (instant):
+# {
+#   "success": true,
+#   "message": "Permintaan withdraw instan sedang diproses.",
+#   "data": {
+#     "id": "WDf3a1b2c3d4e5",
+#     "amount": 20000,
+#     "fee": 2000,
+#     "payment_id": "PAYf6e5d4c3b2",
+#     "method": "GoPay",
+#     "account_name": "ARTA PEDIA PAY",
+#     "account_number": "08129876543",
+#     "status": "pending",
+#     "created_at": "2025-01-01T12:05:00.000Z"
+#   }
+# }</code><code class="copy-content hidden" data-code="php">&lt;?php
+$response = file_get_contents('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw?apikey=YOUR_API_KEY&amount=20000&payment_id=PAYf6e5d4c3b2&instant=true');
+echo $response;
+
+/*
+Contoh response sukses (instant):
+{
+  "success": true,
+  "message": "Permintaan withdraw instan sedang diproses.",
+  "data": {
+    "id": "WDf3a1b2c3d4e5",
+    "amount": 20000,
+    "fee": 2000,
+    "payment_id": "PAYf6e5d4c3b2",
+    "method": "GoPay",
+    "account_name": "ARTA PEDIA PAY",
+    "account_number": "08129876543",
+    "status": "pending",
+    "created_at": "2025-01-01T12:05:00.000Z"
+  }
+}
+*/
+?&gt;</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- H. Cek Status Withdraw -->
+  <section id="sec-i" class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 mb-4 scroll-mt-28">
+    <h2 class="flex items-center gap-2.5 text-[15px] font-semibold text-slate-800 mb-3"><span class="w-7 h-7 rounded-lg bg-brand-50 text-brand-600 border border-brand-100 flex items-center justify-center text-[12px] font-bold shrink-0">I</span>Cek Status Withdraw</h2>
+
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-1 font-medium mb-4">
+      <li>Method: <span class="text-pink-600 font-medium">GET</span></li>
+      <li>URL: <span id="urlWithdrawStatus" class="text-pink-600 text-[12.5px]">/api/withdraw/status</span></li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Parameter:</p>
+    <ul class="list-disc list-inside text-[12.5px] text-gray-700 ml-4 font-medium mb-5">
+      <li><span class="text-pink-600 text-[12.5px]">apikey</span> (string, wajib)</li>
+      <li><span class="text-pink-600 text-[12.5px]">id</span> (string, wajib) – ID withdraw</li>
+    </ul>
+
+    <p class="text-[12.5px] text-gray-800 font-medium mb-2">Contoh Request:</p>
+    <div class="bg-white border border-gray-300 rounded-md overflow-hidden mb-4" data-code-switcher>
+      <div class="flex bg-gray-100 border-b border-gray-300 px-1 pt-1 overflow-x-scroll gap-1">
+        <button onclick="switchCodeTab(this, 'nodejs')" data-lang="nodejs" class="code-tab active flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm bg-white border border-b-0 border-gray-300 text-gray-800 -mb-px relative z-10">
+          <i class="fab fa-node-js text-green-600 text-sm"></i> Node.js
+        </button>
+        <button onclick="switchCodeTab(this, 'python')" data-lang="python" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-python text-brand-600 text-sm"></i> Python
+        </button>
+        <button onclick="switchCodeTab(this, 'curl')" data-lang="curl" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fas fa-terminal text-gray-500 text-sm"></i> cURL
+        </button>
+        <button onclick="switchCodeTab(this, 'php')" data-lang="php" class="code-tab flex items-center gap-1.5 px-3 py-1.5 text-[12.5px] font-medium rounded-t-sm text-gray-500 hover:text-gray-700 border border-transparent">
+          <i class="fab fa-php text-indigo-500 text-sm"></i> PHP
+        </button>
+      </div>
+      <div class="relative bg-gray-50 p-3 group">
+        <button onclick="copyCode(this)" class="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-transparent border-none cursor-pointer z-10" title="Salin">
+          <i class="far fa-copy text-sm"></i>
+        </button>
+        <pre class="text-[12.5px] text-gray-800 whitespace-pre-wrap font-medium break-all leading-relaxed"><code class="copy-content" data-code="nodejs">const axios = require('axios');
+axios.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/status?apikey=YOUR_API_KEY&id=WDc4e3f2a1b2c3')
+  .then(response => console.log(response.data));
+
+/*
+Contoh response:
+{
+  "id": "WDc4e3f2a1b2c3",
+  "amount": 50000,
+  "fee": 1000,
+  "method": "Dana",
+  "account_number": "08123456789",
+  "instant": false,
+  "status": "success",
+  "admin_note": null,
+  "created_at": "2025-01-01T12:00:00.000Z",
+  "completed_at": "2025-01-01T12:30:00.000Z"
+}
+*/</code><code class="copy-content hidden" data-code="python">import requests
+response = requests.get('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/status?apikey=YOUR_API_KEY&id=WDc4e3f2a1b2c3')
+print(response.json())
+
+"""
+Contoh response:
+{
+  "id": "WDc4e3f2a1b2c3",
+  "amount": 50000,
+  "fee": 1000,
+  "method": "Dana",
+  "account_number": "08123456789",
+  "instant": false,
+  "status": "success",
+  "admin_note": null,
+  "created_at": "2025-01-01T12:00:00.000Z",
+  "completed_at": "2025-01-01T12:30:00.000Z"
+}
+"""</code><code class="copy-content hidden" data-code="curl">curl -X GET '<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/status?apikey=YOUR_API_KEY&id=WDc4e3f2a1b2c3'
+
+# Contoh response:
+# {
+#   "id": "WDc4e3f2a1b2c3",
+#   "amount": 50000,
+#   "fee": 1000,
+#   "method": "Dana",
+#   "account_number": "08123456789",
+#   "instant": false,
+#   "status": "success",
+#   "admin_note": null,
+#   "created_at": "2025-01-01T12:00:00.000Z",
+#   "completed_at": "2025-01-01T12:30:00.000Z"
+# }</code><code class="copy-content hidden" data-code="php">&lt;?php
+$response = file_get_contents('<span class="base-url-placeholder">BASE_URL</span>/api/withdraw/status?apikey=YOUR_API_KEY&id=WDc4e3f2a1b2c3');
+echo $response;
+
+/*
+Contoh response:
+{
+  "id": "WDc4e3f2a1b2c3",
+  "amount": 50000,
+  "fee": 1000,
+  "method": "Dana",
+  "account_number": "08123456789",
+  "instant": false,
+  "status": "success",
+  "admin_note": null,
+  "created_at": "2025-01-01T12:00:00.000Z",
+  "completed_at": "2025-01-01T12:30:00.000Z"
+}
+*/
+?&gt;</code></pre>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const baseUrl = window.location.origin;
+
+  // Update URL endpoints
+  document.getElementById('urlBalance').textContent = baseUrl + '/api/balance';
+  document.getElementById('urlInvoice').textContent = baseUrl + '/api/invoice';
+  document.getElementById('urlStatus').textContent = baseUrl + '/api/invoice/status';
+  document.getElementById('urlCancel').textContent = baseUrl + '/api/invoice/cancel';
+  document.getElementById('urlWithdrawMethods').textContent = baseUrl + '/api/withdraw/methods';
+  document.getElementById('urlWithdrawPayments').textContent = baseUrl + '/api/withdraw/payments';
+  document.getElementById('urlWithdraw').textContent = baseUrl + '/api/withdraw';
+  document.getElementById('urlWithdrawStatus').textContent = baseUrl + '/api/withdraw/status';
+
+  // Replace all BASE_URL placeholders in code blocks
+  document.querySelectorAll('.base-url-placeholder').forEach(el => {
+    el.textContent = baseUrl;
+  });
+
+  function switchCodeTab(btn, lang) {
+    const switcher = btn.closest('[data-code-switcher]');
+    if (!switcher) return;
+
+    switcher.querySelectorAll('.code-tab').forEach(tab => {
+      tab.classList.remove('active', 'bg-white', 'border', 'border-b-0', 'border-gray-300', 'text-gray-800', '-mb-px', 'relative', 'z-10');
+      tab.classList.add('text-gray-500', 'border-transparent');
+    });
+
+    btn.classList.add('active', 'bg-white', 'border', 'border-b-0', 'border-gray-300', 'text-gray-800', '-mb-px', 'relative', 'z-10');
+    btn.classList.remove('text-gray-500', 'border-transparent');
+
+    switcher.querySelectorAll('.copy-content[data-code]').forEach(code => {
+      if (code.getAttribute('data-code') === lang) {
+        code.classList.remove('hidden');
+      } else {
+        code.classList.add('hidden');
+      }
+    });
+  }
+
+  function copyCode(btn) {
+    const container = btn.closest('[data-code-switcher]') || btn.closest('.relative');
+    let codeElement = null;
+
+    if (container && container.hasAttribute('data-code-switcher')) {
+      codeElement = container.querySelector('.copy-content:not(.hidden)');
+    } else {
+      codeElement = container ? container.querySelector('.copy-content') : null;
+    }
+
+    const text = codeElement ? (codeElement.innerText || codeElement.textContent) : '';
+    if (!text) return;
+
+    navigator.clipboard.writeText(text).then(() => {
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.className = 'fas fa-check text-sm text-green-500';
+        setTimeout(() => { icon.className = 'far fa-copy text-sm'; }, 1500);
+      }
+    }).catch(() => {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.className = 'fas fa-check text-sm text-green-500';
+        setTimeout(() => { icon.className = 'far fa-copy text-sm'; }, 1500);
+      }
+    });
+  }
+</script>
+
+<%- include('partials/footer2') %>

@@ -1,0 +1,70 @@
+<%- include('partials/header', { title: 'Dashboard' }) %>
+
+<div class="px-4 pb-6 pt-4">
+
+  <div class="flex items-center justify-between mb-4">
+    <h1 class="text-lg font-semibold text-slate-800">Ikhtisar</h1>
+    <a href="/profile" class="inline-flex items-center text-[13px] font-medium text-brand-600 hover:underline">
+      <%= user.email.replace(/^(.{3})[^@]*(?=@)/, '$1****') %>
+    </a>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+    <div class="bg-brand-600 px-4 py-2.5 flex items-center gap-2">
+      <i class="fa-solid fa-wallet text-white/90 text-sm"></i>
+      <span class="text-sm font-semibold text-white">Saldo</span>
+    </div>
+    <div class="px-4 py-5">
+      <h2 id="balanceReal" class="text-3xl font-semibold text-slate-800">
+        Rp <%= user.balance.toLocaleString('id-ID') %>
+      </h2>
+      <% if (user.pendingBalance && user.pendingBalance > 0) { %>
+        <p class="text-[12px] text-amber-600 mt-2 flex items-center gap-1.5">
+          <i class="fa-solid fa-hourglass-half"></i> Rp <%= user.pendingBalance.toLocaleString('id-ID') %> saldo tertunda, akan cair otomatis sesuai jadwal pencairan
+        </p>
+      <% } %>
+    </div>
+  </div>
+
+  <%- include('partials/mon_chart', { pubStats: pubStats, showStats: false, monTitle: 'Grafik Transaksi', monClass: 'mb-4' }) %>
+
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-emerald-50 border-b border-emerald-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-arrow-trend-up text-emerald-600 text-sm"></i>
+        <p class="text-sm font-semibold text-emerald-800 mb-0">Total Pemasukan</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-0">Rp <%= totalDeposit.toLocaleString('id-ID') %></p>
+      </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-amber-50 border-b border-amber-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-arrow-trend-down text-amber-600 text-sm"></i>
+        <p class="text-sm font-semibold text-amber-800 mb-0">Total Pengeluaran</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-0">Rp <%= totalWithdraw.toLocaleString('id-ID') %></p>
+      </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+      <div class="bg-violet-50 border-b border-violet-100 px-4 py-2.5 flex items-center gap-2">
+        <i class="fa-solid fa-receipt text-violet-600 text-sm"></i>
+        <p class="text-sm font-semibold text-violet-800 mb-0">Total Transaksi</p>
+      </div>
+      <div class="px-4 py-5">
+        <p class="text-xl font-semibold text-slate-800 mb-1"><%= recentTrx.length %> Transaksi</p>
+        <a href="/deposit" class="inline-flex items-center gap-1 text-[13px] font-medium text-brand-600 hover:underline">
+          Lihat Semua Transaksi <i class="fas fa-arrow-right text-[10px]"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%- include('partials/social_popup', { socialLinks: locals.socialLinks || [] }) %>
+
+<%- include('partials/footer') %>

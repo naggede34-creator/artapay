@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#ffffff" />
+  <title><%= settings.name %></title>
+  
+  <% if (settings.description) { %>
+  <meta name="description" content="<%= settings.description %>">
+  <% } %>
+  
+  <% if (settings.logoUrl) { %>
+  <link rel="icon" type="image/jpeg" href="<%= settings.logoUrl %>">
+  <% } %>
+  
+  <%- include('partials/theme') %>
+
+  <style>
+    :root {
+      --cream-top: #f8e3e0;
+      --brand-600: #3b82f6;
+      --green-600: #16a34a;
+    }
+    body { 
+      background: #f1f5f9; 
+      color: #1f2937;
+      font-family: 'Open Sans', sans-serif !important;
+      margin: 0;
+    }
+    .validation-msg { font-size: 11px; margin-top: 4px; }
+    .valid { color: #16a34a; }
+    .invalid { color: #dc2626; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Konten utama -->
+  <div class="flex-1 flex flex-col justify-center items-center px-5 py-12">
+
+    <!-- Card Register -->
+    <div class="bg-white border border-slate-200 border-t-4 border-t-brand-600 rounded-xl px-6 py-10 w-full max-w-md flex flex-col gap-6 shadow-lg">
+      
+      <!-- Logo (jika ada) -->
+      <% if (settings.logoUrl) { %>
+        <div class="text-center">
+          <img src="<%= settings.logoUrl %>" alt="Logo" class="h-12 w-auto object-contain mx-auto mb-2">
+          <h2 class="text-base font-medium text-gray-800">Buat Akun Baru</h2>
+        </div>
+      <% } else { %>
+        <div class="text-center">
+          <h2 class="text-base font-medium text-gray-800">Buat Akun Baru</h2>
+        </div>
+      <% } %>
+
+      <!-- Alert Error -->
+  <%- include('partials/toast') %>
+      
+      <!-- Alert Success (jika ada, misal setelah redirect) -->
+
+      <!-- Form Register -->
+      <form method="POST" action="/register" class="flex flex-col gap-4" autocomplete="off" id="registerForm" novalidate>
+        
+        <!-- Username -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-800 mb-2 px-1">Username</label>
+          <input id="usernameInput" name="username" type="text" placeholder="Username" 
+                 class="w-full bg-[#f9f9f9] border border-[#dddddd] rounded-lg px-4 py-3 text-[12.5px] font-medium text-gray-800 outline-none transition-all focus:border-brand-600 focus:ring-1 focus:ring-brand-600 placeholder:text-[12.5px] placeholder:font-medium placeholder:text-gray-400" 
+                 maxlength="15" required>
+          <p id="usernameFeedback" class="validation-msg"></p>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-800 mb-2 px-1">Alamat Email</label>
+          <input id="emailInput" name="email" type="email" placeholder="nama@email.com" 
+                 class="w-full bg-[#f9f9f9] border border-[#dddddd] rounded-lg px-4 py-3 text-[12.5px] font-medium text-gray-800 outline-none transition-all focus:border-brand-600 focus:ring-1 focus:ring-brand-600 placeholder:text-[12.5px] placeholder:font-medium placeholder:text-gray-400" required>
+          <p id="emailFeedback" class="validation-msg"></p>
+        </div>
+        
+        <!-- Password -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-800 mb-2 px-1">Password</label>
+          <div class="flex items-center bg-[#f9f9f9] border border-[#dddddd] rounded-lg transition-all focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600">
+            <input id="passwordInput" name="password" type="password" placeholder="••••••••" 
+                   class="flex-1 bg-transparent px-4 py-3 text-[12.5px] font-medium text-gray-800 outline-none w-full placeholder:text-[12.5px] placeholder:font-medium placeholder:text-gray-400" 
+                   minlength="4" required>
+            <button type="button" onclick="togglePassword()" class="w-9 h-9 text-gray-400 hover:text-gray-600 transition-all flex items-center justify-center shrink-0 mr-1">
+              <i id="toggleIcon" class="far fa-eye text-[12.5px]"></i>
+            </button>
+          </div>
+          <p id="passwordFeedback" class="validation-msg"></p>
+        </div>
+
+        <!-- Konfirmasi Password -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-800 mb-2 px-1">Konfirmasi Password</label>
+          <div class="flex items-center bg-[#f9f9f9] border border-[#dddddd] rounded-lg transition-all focus-within:border-brand-600 focus-within:ring-1 focus-within:ring-brand-600">
+            <input id="confirmPasswordInput" name="confirm_password" type="password" placeholder="••••••••" 
+                   class="flex-1 bg-transparent px-4 py-3 text-[12.5px] font-medium text-gray-800 outline-none w-full placeholder:text-[12.5px] placeholder:font-medium placeholder:text-gray-400" 
+                   minlength="4" required>
+            <button type="button" onclick="toggleConfirmPassword()" class="w-9 h-9 text-gray-400 hover:text-gray-600 transition-all flex items-center justify-center shrink-0 mr-1">
+              <i id="confirmToggleIcon" class="far fa-eye text-[12.5px]"></i>
+            </button>
+          </div>
+          <p id="confirmFeedback" class="validation-msg"></p>
+        </div>
+
+        <!-- Tombol Daftar -->
+        <button type="submit" id="submitBtn" class="bg-brand-600 hover:bg-brand-700 text-white w-full py-3 rounded-lg text-[14px] font-semibold shadow-md transition-all flex items-center justify-center mt-2">
+          <span id="submitBtnText">Daftar Sekarang</span>
+          <i id="submitBtnSpinner" class="fas fa-spinner fa-spin text-[12.5px] hidden ml-2"></i>
+        </button>
+      </form>
+
+      <!-- Link Login -->
+      <p class="text-center text-[12.5px] font-medium text-gray-700">
+        Sudah punya akun? 
+        <a href="/login" class="text-brand-600 font-medium hover:underline transition-colors">Masuk di sini</a>
+      </p>
+    </div>
+
+    <!-- Link bawah -->
+    <div class="mt-8 text-center flex flex-col gap-6">
+      <a href="/" class="text-[12.5px] font-medium text-brand-700 transition-colors flex items-center justify-center gap-1">
+        <i class="fas fa-arrow-left text-[12.5px]"></i> Ke Beranda
+      </a>
+      
+      <div class="text-center flex gap-1">
+        <p class="text-[12.5px] text-gray-800 font-medium">Butuh bantuan?</p>
+        <a href="<%= settings.contactDeveloper || '#' %>" class="text-[12.5px] font-medium text-brand-700 underline transition-colors flex items-center justify-center gap-1">
+          Hubungi tim Support
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Elemen input
+    const usernameInput = document.getElementById('usernameInput');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+
+    // Elemen feedback
+    const usernameFeedback = document.getElementById('usernameFeedback');
+    const emailFeedback = document.getElementById('emailFeedback');
+    const passwordFeedback = document.getElementById('passwordFeedback');
+    const confirmFeedback = document.getElementById('confirmFeedback');
+
+    // Flag pencegahan double submit
+    let isSubmitting = false;
+
+    // Fungsi untuk menghapus spasi
+    function removeSpaces(e) {
+      const input = e.target;
+      const cursorPos = input.selectionStart;
+      const oldValue = input.value;
+      const newValue = oldValue.replace(/\s/g, '');
+      if (oldValue !== newValue) {
+        input.value = newValue;
+        // Posisikan kursor kembali
+        const diff = oldValue.length - newValue.length;
+        input.setSelectionRange(cursorPos - diff, cursorPos - diff);
+      }
+    }
+
+    // Pasang event listener untuk menghapus spasi
+    usernameInput.addEventListener('input', removeSpaces);
+    emailInput.addEventListener('input', removeSpaces);
+    passwordInput.addEventListener('input', removeSpaces);
+    confirmPasswordInput.addEventListener('input', removeSpaces);
+
+    // Toggle visibility
+    function togglePassword() {
+      const icon = document.getElementById('toggleIcon');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        passwordInput.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    function toggleConfirmPassword() {
+      const icon = document.getElementById('confirmToggleIcon');
+      if (confirmPasswordInput.type === 'password') {
+        confirmPasswordInput.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        confirmPasswordInput.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    // Validasi username (4-15, hanya huruf & angka)
+    function validateUsername() {
+      const val = usernameInput.value.trim();
+      if (val.length === 0) {
+        usernameFeedback.textContent = '';
+        return false;
+      }
+      const regex = /^[a-zA-Z0-9]+$/;
+      if (val.length >= 4 && val.length <= 15 && regex.test(val)) {
+        usernameFeedback.textContent = 'Username valid';
+        usernameFeedback.className = 'validation-msg valid';
+        return true;
+      } else {
+        usernameFeedback.textContent = 'Username minimal 4 karakter, huruf & angka saja';
+        usernameFeedback.className = 'validation-msg invalid';
+        return false;
+      }
+    }
+
+    // Validasi email
+    function validateEmail() {
+      const val = emailInput.value.trim();
+      if (val.length === 0) {
+        emailFeedback.textContent = '';
+        return false;
+      }
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (regex.test(val)) {
+        emailFeedback.textContent = 'Email valid';
+        emailFeedback.className = 'validation-msg valid';
+        return true;
+      } else {
+        emailFeedback.textContent = 'Format email tidak valid';
+        emailFeedback.className = 'validation-msg invalid';
+        return false;
+      }
+    }
+
+    // Validasi password
+    function validatePassword() {
+      const val = passwordInput.value;
+      if (val.length === 0) {
+        passwordFeedback.textContent = '';
+        return false;
+      }
+      if (val.length >= 4) {
+        passwordFeedback.textContent = 'Password minimal 4 karakter';
+        passwordFeedback.className = 'validation-msg valid';
+        return true;
+      } else {
+        passwordFeedback.textContent = 'Password minimal 4 karakter';
+        passwordFeedback.className = 'validation-msg invalid';
+        return false;
+      }
+    }
+
+    // Validasi konfirmasi password
+    function validateConfirmPassword() {
+      const password = passwordInput.value;
+      const confirm = confirmPasswordInput.value;
+      if (confirm.length === 0) {
+        confirmFeedback.textContent = '';
+        return false;
+      }
+      if (password === confirm) {
+        confirmFeedback.textContent = 'Password cocok';
+        confirmFeedback.className = 'validation-msg valid';
+        return true;
+      } else {
+        confirmFeedback.textContent = 'Password tidak cocok';
+        confirmFeedback.className = 'validation-msg invalid';
+        return false;
+      }
+    }
+
+    // Event listeners
+    usernameInput.addEventListener('input', validateUsername);
+    emailInput.addEventListener('input', validateEmail);
+    passwordInput.addEventListener('input', () => {
+      validatePassword();
+      validateConfirmPassword(); // update juga konfirmasi jika password berubah
+    });
+    confirmPasswordInput.addEventListener('input', validateConfirmPassword);
+
+    // Saat submit, cek ulang semua validasi dan cegah double submit
+    document.getElementById('registerForm').addEventListener('submit', function(e) {
+      // Jika sudah dalam proses pengiriman, cegah submit ulang
+      if (isSubmitting) {
+        e.preventDefault();
+        return false;
+      }
+
+      // Trigger semua validasi
+      const isUserValid = validateUsername();
+      const isEmailValid = validateEmail();
+      const isPassValid = validatePassword();
+      const isConfirmValid = validateConfirmPassword();
+
+      if (!isUserValid || !isEmailValid || !isPassValid || !isConfirmValid) {
+        e.preventDefault();
+        // Fokus ke input pertama yang tidak valid
+        if (!isUserValid) usernameInput.focus();
+        else if (!isEmailValid) emailInput.focus();
+        else if (!isPassValid) passwordInput.focus();
+        else if (!isConfirmValid) confirmPasswordInput.focus();
+        return false;
+      }
+
+      // Validasi lolos, kunci tombol
+      isSubmitting = true;
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.classList.add('opacity-70', 'cursor-not-allowed');
+      document.getElementById('submitBtnText').textContent = 'Mendaftarkan...';
+      document.getElementById('submitBtnSpinner').classList.remove('hidden');
+    });
+
+    // Reset tombol jika halaman dimuat dari cache (misal tombol back)
+    window.addEventListener('pageshow', function(event) {
+      if (event.persisted) {
+        isSubmitting = false;
+        const btn = document.getElementById('submitBtn');
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-70', 'cursor-not-allowed');
+          document.getElementById('submitBtnText').textContent = 'Daftar Sekarang';
+          document.getElementById('submitBtnSpinner').classList.add('hidden');
+        }
+      }
+    });
+  </script>
+
+</body>
+</html>

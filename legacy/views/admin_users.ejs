@@ -1,0 +1,342 @@
+<%- include('partials/header', { title: 'Kelola User' }) %>
+
+<style>
+  .custom-scroll::-webkit-scrollbar { width: 2px; height: 2px; }
+  .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+  .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+  .custom-scroll:hover::-webkit-scrollbar-thumb { background-color: #94a3b8; }
+</style>
+
+<div class="max-w-3xl mx-auto px-4 pt-4 pb-10">
+
+  <%- include('partials/page_head', { title: 'Kelola User', subtitle: users.length + ' pengguna terdaftar', icon: 'fa-users', color: 'sky' }) %>
+
+  <!-- Search -->
+  <div class="relative mb-4">
+    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-[13px] pointer-events-none"></i>
+    <input id="searchInput" type="text" placeholder="Cari username atau email..."
+           class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-3 py-3 text-[13px] font-medium text-slate-800 outline-none shadow-sm"
+           value="<%= typeof search !== 'undefined' ? search : '' %>" autocomplete="off">
+  </div>
+
+  <!-- Tabel Pengguna -->
+  <% if (users.length === 0) { %>
+    <div class="bg-white border border-[#dddddd] rounded-[2px] p-8 text-center">
+      <p class="text-sm font-medium text-gray-600">Belum ada pengguna terdaftar</p>
+    </div>
+  <% } else { %>
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden" id="userTableContainer">
+      <div class="overflow-x-auto custom-scroll" style="max-height: 500px;">
+        <table class="w-full text-[12.5px] text-left whitespace-nowrap font-medium">
+          <thead class="bg-[#f9f9f9] text-[12.5px] text-gray-800 font-medium border-b border-[#dddddd] sticky top-0 z-10">
+            <tr>
+              <th class="px-3 py-2.5 font-semibold">Username</th>
+              <th class="px-3 py-2.5 font-semibold">Saldo</th>
+              <th class="px-3 py-2.5 font-semibold">Tanggal Daftar</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody" class="divide-y divide-[#dddddd] font-medium">
+            <% users.forEach(u => { %>
+            <tr class="hover:bg-gray-50 transition-colors user-row"
+                data-id="<%= u._id %>"
+                data-username="<%= u.username %>"
+                data-email="<%= u.email %>"
+                data-balance="<%= u.balance %>"
+                data-suspended="<%= u.suspended %>"
+                data-project-name="<%= u.projectName || '' %>"
+                data-callback-url="<%= u.callbackUrl || '' %>"
+                data-merchant-logo-url="<%= u.merchantLogoUrl || '' %>"
+                data-created="<%= u.createdAt.toISOString() %>">
+              <td class="px-3 py-3 text-gray-800">
+                <span class="text-[12.5px] font-medium"><%= u.username %></span>
+                <button type="button" onclick="event.stopPropagation(); window.location.hash = 'edit-user-' + this.closest('tr').dataset.id;" class="ml-2 text-brand-600 hover:text-brand-800 transition-colors">
+                  <i class="fas fa-pen-to-square text-[12.5px]"></i>
+                </button>
+              </td>
+              <td class="px-3 py-3 text-gray-800">Rp <%= u.balance.toLocaleString('id-ID') %></td>
+              <td class="px-3 py-3 text-gray-800 date-cell" data-timestamp="<%= u.createdAt.toISOString() %>"></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <!-- Empty State untuk hasil filter -->
+    <div id="emptyState" class="hidden py-12 text-center flex flex-col items-center justify-center border border-[#dddddd] rounded-[2px] bg-white mt-0">
+      <p class="text-sm font-medium text-gray-600">Pengguna tidak ditemukan</p>
+    </div>
+  <% } %>
+</div>
+
+<!-- ===================== MODAL EDIT USER ===================== -->
+<div id="editUserModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="closeEditUserModal()"></div>
+  <div class="relative bg-white border border-[#dddddd] rounded-[2px] shadow-sm w-full max-w-md transform transition-all scale-95 opacity-0 duration-200 flex flex-col max-h-[90vh]" id="editUserModalContent">
+    <div class="px-5 py-3 border-b border-[#dddddd] flex items-center justify-between shrink-0">
+      <h2 class="text-sm font-medium text-gray-800">Edit Pengguna</h2>
+      <button onclick="closeEditUserModal()" class="w-7 h-7 flex items-center justify-center rounded-[2px] text-gray-500 hover:text-gray-700 transition-colors"><i class="fas fa-times text-sm"></i></button>
+    </div>
+    <div class="p-5 overflow-y-auto custom-scroll">
+      <form id="editUserForm" method="POST" action="" class="space-y-4">
+        <!-- Username -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-700 mb-1">Username</label>
+          <input name="username" id="editUsername" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600" required>
+        </div>
+        <!-- Email -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-700 mb-1">Email</label>
+          <input name="email" type="email" id="editEmail" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600" required>
+        </div>
+        <!-- Nama Project -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-700 mb-1">Nama Project <span class="text-gray-400">(opsional, maks. 15 karakter)</span></label>
+          <input name="projectName" id="editProjectName" maxlength="15" placeholder="Nama Project" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 placeholder:text-[12.5px] placeholder:font-medium placeholder:text-gray-400">
+        </div>
+        <!-- Callback URL -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-700 mb-1">Callback URL <span class="text-gray-400">(opsional)</span></label>
+          <input name="callbackUrl" id="editCallbackUrl" placeholder="https://example.com/callback" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 placeholder:text-[12.5px] placeholder:font-medium placeholder:text-gray-400">
+        </div>
+        <!-- URL Logo Merchant -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-700 mb-1">URL Logo Merchant <span class="text-gray-400">(opsional)</span></label>
+          <input name="merchantLogoUrl" id="editMerchantLogoUrl" placeholder="https://example.com/logo.png" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 placeholder:text-[12.5px] placeholder:font-medium placeholder:text-gray-400">
+        </div>
+        <!-- Password Baru (opsional) -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-700 mb-1">Password Baru <span class="text-gray-400">(opsional)</span></label>
+          <input name="password" type="password" id="editPassword" placeholder="••••••••" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 placeholder:text-[12.5px] placeholder:font-medium placeholder:text-gray-400">
+        </div>
+        <!-- Saldo -->
+        <div>
+          <label class="block text-[12.5px] font-medium text-gray-700 mb-1">Saldo (Rp)</label>
+          <input type="text" id="editBalanceDisplay" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600" oninput="formatEditBalance(this)">
+          <input type="hidden" name="balance" id="editBalanceReal">
+        </div>
+        <!-- Suspend -->
+        <div class="flex items-center gap-3 py-2">
+          <input type="checkbox" name="suspended" id="editSuspended" class="w-4 h-4 text-brand-600 border-gray-300 rounded focus:ring-brand-600">
+          <label for="editSuspended" class="text-[12.5px] font-medium text-gray-700">Suspend (Tangguhkan) Akun</label>
+        </div>
+        <!-- Tombol Simpan -->
+        <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2">
+          <i class="fas fa-save text-[12.5px]"></i> Simpan Perubahan
+        </button>
+      </form>
+      <!-- Tombol Hapus -->
+      <div class="mt-4 pt-4 border-t border-[#dddddd]">
+        <button type="button" onclick="confirmDeleteUser()" class="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2">
+          <i class="fas fa-trash-alt text-[12.5px]"></i> Hapus Pengguna
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MODAL KONFIRMASI HAPUS ===================== -->
+<div id="deleteConfirmModal" class="fixed inset-0 z-[160] hidden flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeDeleteConfirmModal()"></div>
+  <div class="relative bg-white border border-[#dddddd] rounded-[2px] shadow-sm w-full max-w-sm transform transition-all scale-95 opacity-0 duration-200" id="deleteConfirmContent">
+    <div class="px-5 py-3 border-b border-[#dddddd] flex items-center justify-between">
+      <h3 class="text-sm font-medium text-gray-800">Konfirmasi Hapus</h3>
+      <button onclick="closeDeleteConfirmModal()" class="w-7 h-7 flex items-center justify-center rounded-[2px] text-gray-500 hover:text-gray-700"><i class="fas fa-times text-[12.5px]"></i></button>
+    </div>
+    <div class="p-5">
+      <p class="text-[12.5px] font-medium text-gray-600 mb-4">Apakah Anda yakin ingin menghapus pengguna ini? Data akan hilang secara permanen.</p>
+      <div class="flex gap-3">
+        <button onclick="closeDeleteConfirmModal()" class="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-[2px] text-[12.5px] transition-colors border border-[#dddddd]">Batal</button>
+        <form id="deleteUserForm" method="POST" action="" class="flex-1 m-0">
+          <button type="submit" class="w-full px-4 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-[2px] text-[12.5px] transition-colors">Ya, Hapus</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ===================== FORMAT TANGGAL DI SISI KLIEN =====================
+  function formatDateCell(cell) {
+    const timestamp = cell.dataset.timestamp;
+    if (!timestamp) return;
+    const d = new Date(timestamp);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const dateNum = String(d.getDate()).padStart(2, '0');
+    const timeStr = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    cell.textContent = `${year}-${month}-${dateNum} ${timeStr}`;
+  }
+
+  // ===================== HELPER =====================
+  function getUserDataFromRow(row) {
+    return {
+      id: row.dataset.id,
+      username: row.dataset.username,
+      email: row.dataset.email,
+      balance: row.dataset.balance,
+      suspended: row.dataset.suspended === 'true',
+      projectName: row.dataset.projectName || '',
+      callbackUrl: row.dataset.callbackUrl || '',
+      merchantLogoUrl: row.dataset.merchantLogoUrl || '',
+      created: row.dataset.created
+    };
+  }
+
+  function formatEditBalance(input) {
+    let raw = input.value.replace(/\D/g, '');
+    document.getElementById('editBalanceReal').value = raw;
+    input.value = raw ? Number(raw).toLocaleString('id-ID') : '';
+  }
+
+  // ===================== MODAL EDIT (Hash Router) =====================
+  function openEditModalWithData(user) {
+    document.getElementById('editUsername').value = user.username;
+    document.getElementById('editEmail').value = user.email;
+    document.getElementById('editProjectName').value = user.projectName || '';
+    document.getElementById('editCallbackUrl').value = user.callbackUrl || '';
+    document.getElementById('editMerchantLogoUrl').value = user.merchantLogoUrl || '';
+    document.getElementById('editBalanceDisplay').value = Number(user.balance).toLocaleString('id-ID');
+    document.getElementById('editBalanceReal').value = user.balance;
+    document.getElementById('editSuspended').checked = user.suspended;
+    document.getElementById('editUserForm').action = '/admin/users/' + user.id + '/edit';
+
+    const modal = document.getElementById('editUserModal');
+    const content = document.getElementById('editUserModalContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeEditUserModal() {
+    if (window.location.hash.startsWith('#edit-user-')) {
+      history.back();
+    } else {
+      hideEditModalUI();
+    }
+  }
+
+  function hideEditModalUI() {
+    const modal = document.getElementById('editUserModal');
+    const content = document.getElementById('editUserModalContent');
+    if (content) {
+      content.classList.remove('scale-100', 'opacity-100');
+      content.classList.add('scale-95', 'opacity-0');
+    }
+    setTimeout(() => {
+      modal.classList.add('hidden');
+      document.body.style.overflow = '';
+    }, 200);
+  }
+
+  // ===================== MODAL KONFIRMASI HAPUS =====================
+  function confirmDeleteUser() {
+    const userId = document.getElementById('editUserForm').action.split('/').pop();
+    if (!userId) return;
+    document.getElementById('deleteUserForm').action = '/admin/users/' + userId + '/delete';
+    
+    const modal = document.getElementById('deleteConfirmModal');
+    const content = document.getElementById('deleteConfirmContent');
+    modal.classList.remove('hidden');
+    setTimeout(() => {
+      content.classList.remove('scale-95', 'opacity-0');
+      content.classList.add('scale-100', 'opacity-100');
+    }, 10);
+  }
+
+  function closeDeleteConfirmModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    const content = document.getElementById('deleteConfirmContent');
+    content.classList.remove('scale-100', 'opacity-100');
+    content.classList.add('scale-95', 'opacity-0');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 200);
+  }
+
+  // ===================== HASH ROUTER =====================
+  function handleHashChange() {
+    const hash = window.location.hash;
+    if (hash.startsWith('#edit-user-')) {
+      const userId = hash.replace('#edit-user-', '');
+      const row = document.querySelector(`tr.user-row[data-id="${userId}"]`);
+      if (row) {
+        const user = getUserDataFromRow(row);
+        hideDeleteConfirmIfNeeded();
+        openEditModalWithData(user);
+      } else {
+        history.replaceState(null, null, window.location.pathname + window.location.search);
+      }
+    } else {
+      hideEditModalUI();
+      hideDeleteConfirmIfNeeded();
+    }
+  }
+
+  function hideDeleteConfirmIfNeeded() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (!modal.classList.contains('hidden')) {
+      closeDeleteConfirmModal();
+    }
+  }
+
+  window.addEventListener('hashchange', handleHashChange);
+  window.addEventListener('popstate', function() {
+    if (!window.location.hash.startsWith('#edit-user-')) {
+      hideEditModalUI();
+      hideDeleteConfirmIfNeeded();
+    }
+  });
+
+  document.getElementById('editUserModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditUserModal();
+  });
+  document.getElementById('deleteConfirmModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteConfirmModal();
+  });
+
+  // ===================== CLIENT-SIDE SEARCH =====================
+  function applyUserFilter() {
+    const searchText = document.getElementById('searchInput').value.trim().toLowerCase();
+    const rows = document.querySelectorAll('#userTableBody .user-row');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const username = (row.dataset.username || '').toLowerCase();
+      const email = (row.dataset.email || '').toLowerCase();
+      const match = searchText === '' || username.includes(searchText) || email.includes(searchText);
+      row.style.display = match ? '' : 'none';
+      if (match) visibleCount++;
+    });
+
+    const emptyState = document.getElementById('emptyState');
+    const tableContainer = document.getElementById('userTableContainer');
+    if (emptyState) {
+      if (visibleCount === 0 && rows.length > 0) {
+        emptyState.classList.remove('hidden');
+        if (tableContainer) tableContainer.classList.add('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+        if (tableContainer) tableContainer.classList.remove('hidden');
+      }
+    }
+  }
+
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', applyUserFilter);
+  }
+
+  // ===================== INISIALISASI =====================
+  document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.date-cell').forEach(formatDateCell);
+    if (window.location.hash.startsWith('#edit-user-')) {
+      handleHashChange();
+    }
+    applyUserFilter();
+  });
+</script>
+
+<%- include('partials/footer') %>

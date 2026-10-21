@@ -1,0 +1,12 @@
+<%
+  const _c = (typeof color !== 'undefined' && color) ? color : 'brand';
+  const _ico = (typeof icon !== 'undefined' && icon) ? icon : 'fa-circle-info';
+%>
+<div class="pg-head">
+  <div class="pg-ico bg-<%= _c %>-50 text-<%= _c %>-600 border border-<%= _c %>-100"><i class="fa-solid <%= _ico %>"></i></div>
+  <div class="min-w-0">
+    <h1><%= title %></h1>
+    <% if (typeof subtitle !== 'undefined' && subtitle) { %><p><%= subtitle %></p><% } %>
+  </div>
+  <% if (typeof right !== 'undefined' && right) { %><div class="ml-auto shrink-0"><%- right %></div><% } %>
+</div>

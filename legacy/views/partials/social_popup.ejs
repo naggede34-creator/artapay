@@ -1,0 +1,42 @@
+<% if (locals.socialLinks && socialLinks.length) { %>
+<style>
+  #socialPopup { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(15,23,42,.55); animation: sp-fade .18s ease-out; }
+  #socialPopup[hidden] { display: none; }
+  #socialPopup .sp-card { position: relative; width: 100%; max-width: 380px; background: #fff; border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,.25); padding: 22px 18px 18px; animation: sp-pop .22s ease-out; }
+  @keyframes sp-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes sp-pop { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { #socialPopup, #socialPopup .sp-card { animation: none; } }
+</style>
+<div id="socialPopup" role="dialog" aria-modal="true" aria-labelledby="spTitle">
+  <div class="sp-card">
+    <button type="button" id="spClose" aria-label="Tutup" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <div class="text-center mb-4 pr-6 pl-6">
+      <h3 id="spTitle" class="text-base font-semibold text-slate-800">Ikuti Channel Admin</h3>
+      <p class="text-[12.5px] text-slate-500 mt-1">Dapatkan info, update fitur, dan bantuan langsung dari admin.</p>
+    </div>
+    <div class="flex flex-col gap-2.5">
+      <% var spIcons = { whatsapp: ['fa-brands fa-whatsapp', 'bg-emerald-500'], youtube: ['fa-brands fa-youtube', 'bg-red-500'], tiktok: ['fa-brands fa-tiktok', 'bg-slate-900'], instagram: ['fa-brands fa-instagram', 'bg-pink-500'] }; %>
+      <% socialLinks.forEach(function (l) { var ic = spIcons[l.key]; %>
+        <a href="<%= l.url %>" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 border border-slate-200 rounded-xl px-3 py-2.5 hover:bg-slate-50 transition">
+          <span class="w-9 h-9 rounded-lg <%= ic[1] %> text-white flex items-center justify-center text-lg shrink-0"><i class="<%= ic[0] %>"></i></span>
+          <span class="text-[13.5px] font-semibold text-slate-800 flex-1"><%= l.label %></span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[11px] text-slate-400"></i>
+        </a>
+      <% }); %>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    var pop = document.getElementById('socialPopup');
+    if (!pop) return;
+    function close() { pop.hidden = true; document.removeEventListener('keydown', onKey); }
+    function onKey(e) { if (e.key === 'Escape') close(); }
+    document.getElementById('spClose').addEventListener('click', close);
+    pop.addEventListener('click', function (e) { if (e.target === pop) close(); });
+    document.addEventListener('keydown', onKey);
+  })();
+</script>
+<% } %>

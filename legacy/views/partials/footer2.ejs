@@ -1,0 +1,72 @@
+</main>
+
+<!-- ========== FOOTER PROFESIONAL ========== -->
+<footer class="bg-gray-50 border-t border-[#dddddd] mt-6">
+  <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    
+    <!-- Kolom 1: Logo & Deskripsi -->
+    <div>
+      <% if (settings.logoUrl) { %>
+        <img src="<%= settings.logoUrl %>" alt="<%= settings.name %>" class="h-10 w-auto mb-3 object-contain" />
+      <% } else { %>
+        <div class="w-10 h-10 rounded-[2px] bg-accent-50 text-brand-600 flex items-center justify-center text-[12.5px] mb-3 border border-[#dddddd]">
+          <%= settings.name.charAt(0).toUpperCase() %>
+        </div>
+      <% } %>
+      <p class="text-[12.5px] font-medium text-gray-700 leading-relaxed">
+        <%= settings.description %>
+      </p>
+    </div>
+
+    <!-- Kolom 2: Navigasi & Legal (berdampingan) -->
+    <div>
+      <div class="flex flex-row gap-6">
+        <!-- Sub: Navigasi -->
+        <div class="flex-1">
+          <h5 class="text-[12.5px] font-semibold text-gray-700">Navigasi</h5>
+          <ul class="">
+            <li><a href="/" class="text-[12.5px] font-medium text-gray-700 hover:text-brand-600 transition-colors underline">Beranda</a></li>
+            <li><a href="/docs" class="text-[12.5px] font-medium text-gray-700 hover:text-brand-600 transition-colors underline">API Docs</a></li>
+            <li><a href="/register" class="text-[12.5px] font-medium text-gray-700 hover:text-brand-600 transition-colors underline">Daftar</a></li>
+            <li><a href="/login" class="text-[12.5px] font-medium text-gray-700 hover:text-brand-600 transition-colors underline">Masuk</a></li>
+          </ul>
+        </div>
+        <!-- Sub: Legal -->
+        <div class="flex-1">
+          <h5 class="text-[12.5px] font-semibold text-gray-800">Syarat & Ketentuan</h5>
+          <ul class="">
+            <li><a href="/privacy-policy" class="text-[12.5px] font-medium text-gray-700 hover:text-brand-600 transition-colors underline">Privacy Policy</a></li>
+            <li><a href="/terms-of-service" class="text-[12.5px] font-medium text-gray-700 hover:text-brand-600 transition-colors underline">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kolom 3: Kontak & Bantuan -->
+    <div class="flex-1">
+      <h4 class="text-[12.5px] font-semibold text-gray-800 mb-1">Pusat Bantuan</h4>
+      <ul class="space-y-1">
+        <li>
+          <a href="mailto:alpincodeid@gmail.com" class="text-[12.5px] font-medium text-gray-700 hover:text-brand-600 transition-colors flex items-center gap-1 underline">
+            <i class="fas fa-envelope text-[12.5px]"></i> alpincodeid@gmail.com
+          </a>
+        </li>
+        <li>
+          <a href="<%= settings.contactDeveloper || '#' %>" target="_blank" rel="noopener noreferrer" class="text-[12.5px] font-medium text-gray-700 hover:text-brand-600 transition-colors flex items-center gap-1 underline">
+            <i class="fa-brands fa-telegram text-[12.5px]"></i> Telegram Support
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Copyright -->
+  <div class="border-t border-[#dddddd] py-4 px-6">
+    <p class="text-center font-medium text-[12.5px] text-gray-700">
+      &copy; 2026 <%= settings.name %>. All rights reserved.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

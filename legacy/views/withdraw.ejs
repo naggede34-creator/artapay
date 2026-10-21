@@ -1,0 +1,790 @@
+<%- include('partials/header', { title: 'Penarikan' }) %>
+
+<style>
+  :root {
+    --brand-600: #3b82f6;
+    --accent-50: #eff6ff;
+  }
+  .text-brand-600 { color: var(--brand-600); }
+  .bg-accent-50 { background-color: var(--accent-50); }
+  
+  .custom-scroll::-webkit-scrollbar { width: 2px; height: 2px; }
+  .custom-scroll::-webkit-scrollbar-track { background: #f1f1f1; }
+  .custom-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+  .custom-scroll:hover::-webkit-scrollbar-thumb { background-color: #94a3b8; }
+  
+  .detail-table td { padding: 10px 14px; border-bottom: 1px solid #dddddd; }
+  .detail-table tr:last-child td { border-bottom: none; }
+</style>
+
+<div class="max-w-3xl mx-auto px-4 pt-4 pb-6">
+
+  <%- include('partials/toast') %>
+
+
+  <%- include('partials/page_head', { title: 'Penarikan', subtitle: 'Tarik saldo ke e-wallet atau rekening', icon: 'fa-arrow-trend-down', color: 'amber' }) %>
+
+  <!-- Saldo + aksi -->
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden mb-4">
+    <div class="bg-brand-600 px-4 py-2.5 flex items-center gap-2">
+      <i class="fa-solid fa-wallet text-white/90 text-sm"></i>
+      <span class="text-sm font-semibold text-white">Saldo Tersedia</span>
+    </div>
+    <div class="px-4 py-4">
+      <h2 class="text-2xl font-semibold text-slate-800 mb-3">Rp <%= user.balance.toLocaleString('id-ID') %></h2>
+      <div class="grid grid-cols-2 gap-2.5">
+        <button onclick="openManualModal()" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2">
+          <i class="fa-solid fa-hand-holding-dollar text-[12px]"></i> Penarikan Manual
+        </button>
+        <button onclick="openInstantModal()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2" style="box-shadow:0 6px 14px -6px rgba(34,197,94,.6)">
+          <i class="fa-solid fa-bolt text-[12px]"></i> Penarikan Instan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-3 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+    <div class="w-full">
+      <input id="searchInput" type="text" placeholder="Cari ID Transaksi..." 
+             class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-2.5 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600 placeholder:text-[12.5px] placeholder:font-medium placeholder:text-gray-400">
+    </div>
+
+    <div class="relative w-full" id="filterDropdownContainer">
+      <button type="button" id="filterButton" class="w-full bg-white border border-[#dddddd] rounded-[2px] text-gray-700 px-3 py-2.5 text-[12.5px] font-medium text-left flex justify-between items-center">
+        <span id="activeFilterText">Semua</span>
+        <i class="fas fa-chevron-down text-[12.5px] text-gray-400"></i>
+      </button>
+
+      <div id="filterMenu" class="absolute left-0 right-0 mt-1 bg-white border border-[#dddddd] rounded-[2px] shadow-sm py-1 hidden z-50">
+        <button type="button" data-val="all" class="filter-option w-full text-left px-3 py-2 text-[12.5px] font-medium hover:bg-gray-100 flex justify-between items-center">Semua <i class="fas fa-check text-brand-600 check-icon text-[12.5px]"></i></button>
+        <button type="button" data-val="pending" class="filter-option w-full text-left px-3 py-2 text-[12.5px] font-medium hover:bg-gray-100 flex justify-between items-center">Pending <i class="fas fa-check text-brand-600 check-icon text-[12.5px] hidden"></i></button>
+        <button type="button" data-val="success" class="filter-option w-full text-left px-3 py-2 text-[12.5px] font-medium hover:bg-gray-100 flex justify-between items-center">Berhasil <i class="fas fa-check text-brand-600 check-icon text-[12.5px] hidden"></i></button>
+        <button type="button" data-val="failed" class="filter-option w-full text-left px-3 py-2 text-[12.5px] font-medium hover:bg-gray-100 flex justify-between items-center">Gagal <i class="fas fa-check text-brand-600 check-icon text-[12.5px] hidden"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="border border-[#dddddd] rounded-[2px] mb-6">
+    <div class="overflow-x-auto custom-scroll">
+      <div class="max-h-[60vh] overflow-y-auto custom-scroll">
+        <table class="w-full text-left border-collapse whitespace-nowrap">
+          <thead class="sticky top-0 z-10 bg-gray-50 shadow-sm">
+            <tr>
+              <th class="py-2.5 px-3 text-[12.5px] font-semibold text-gray-800 border-b border-[#dddddd]">ID Transaksi</th>
+              <th class="py-2.5 px-3 text-[12.5px] font-semibold text-gray-800 border-b border-[#dddddd]">Jumlah</th>
+              <th class="py-2.5 px-3 text-[12.5px] font-semibold text-gray-800 border-b border-[#dddddd]">Status</th>
+              <th class="py-2.5 px-3 text-[12.5px] font-semibold text-gray-800 border-b border-[#dddddd]">Tanggal</th>
+            </tr>
+          </thead>
+          <tbody id="recentTrxContainer">
+            <tr id="emptyTrxState" class="hidden">
+              <td colspan="4" class="py-10 text-center text-[12.5px] text-gray-500">Tidak ada data</td>
+            </tr>
+            <tr id="emptyFilterState" class="hidden">
+              <td colspan="4" class="py-10 text-center text-[12.5px] text-gray-500">Tidak ada transaksi</td>
+            </tr>
+
+            <% if (withdrawals && withdrawals.length > 0) { %>
+              <% withdrawals.forEach((w) => { 
+                   let nominalAsli = Math.abs(w.amount); 
+                   let statusText = w.status === 'paid' || w.status === 'success' ? 'completed' : w.status;
+                   let statusColor = '';
+                   if (w.status === 'paid' || w.status === 'success') {
+                     statusColor = 'text-brand-600';
+                   } else if (w.status === 'pending') {
+                     statusColor = 'text-[#eab308]';
+                   } else {
+                     statusColor = 'text-[#dc2626]';
+                   }
+              %>
+                <tr class="trx-item border-b border-[#dddddd] hover:bg-gray-50 cursor-pointer transition-colors"
+                    data-status="<%= w.status %>" data-id="<%= w._id %>"
+                    data-created="<%= w.createdAt.toISOString() %>"
+                    data-fee="<%= w.fee || 0 %>" data-total="<%= nominalAsli + (w.fee || 0) %>"
+                    data-amount="<%= w.amount %>" data-method="<%= w.method || '' %>"
+                    data-account="<%= w.accountNumber || '' %>"
+                    data-name="<%= (w.accountName || '').replace(/"/g, '&quot;') %>"
+                    data-completed="<%= w.completedAt ? w.completedAt.toISOString() : '' %>"
+                    data-admin-note="<%= (w.adminNote || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') %>"
+                    data-instant="<%= w.instant ? 'true' : 'false' %>"
+                    data-balance-after="<%= w.balanceAfter %>"
+                    onclick="window.location.hash = 'withdraw-' + this.dataset.id">
+                  <td class="py-3 px-3 text-[12.5px] font-medium text-brand-600 underline"><%= w._id %></td>
+                  <td class="py-3 px-3 text-[12.5px] font-medium text-gray-800">Rp <%= nominalAsli.toLocaleString('id-ID') %></td>
+                  <td class="py-3 px-3 text-[12.5px] font-medium <%= statusColor %>">
+                    <%= statusText %> 
+                  </td>
+                  <td class="py-3 px-3 text-[12.5px] font-medium text-gray-800 date-cell" data-timestamp="<%= w.createdAt.toISOString() %>"></td>
+                </tr>
+              <% }) %>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL MANUAL -->
+  <div id="manualModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-6">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeManualModal()"></div>
+    <div class="relative bg-white border border-[#dddddd] rounded-[2px] shadow-sm w-full max-w-sm">
+      <div class="px-5 py-3 border-b border-[#dddddd] flex items-center justify-between">
+        <h3 class="text-sm font-medium text-gray-800">Penarikan Manual</h3>
+        <button onclick="closeManualModal()" class="w-7 h-7 flex items-center justify-center rounded-[2px] text-gray-800 hover:bg-gray-100">
+          <i class="fas fa-times text-sm"></i>
+        </button>
+      </div>
+      <div class="p-5">
+        <% if (manualPayments.length === 0) { %>
+          <p class="text-[12.5px] font-medium text-gray-700 mb-3">
+            <%= totalPayments === 0 ? 'Kamu belum punya payment.' : 'Payment kamu belum tersedia untuk penarikan manual.' %>
+            Tambahkan atau ajukan payment di halaman <a href="/profile" class="text-brand-600 underline">Profil</a>.
+          </p>
+        <% } %>
+        <table class="w-full text-[12.5px] text-left detail-table border border-[#dddddd] rounded-[2px] mb-2">
+          <tbody>
+            <tr>
+              <td class="w-1/1 text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Saldo Tersedia</td>
+              <td class="text-[12.5px] font-medium text-gray-800 px-4">Rp <%= user.balance.toLocaleString('id-ID') %></td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Biaya Admin</td>
+              <td class="text-[12.5px] font-medium text-gray-800 px-4" id="manualFeeDisplay">-</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Minimal Penarikan</td>
+              <td class="text-[12.5px] font-medium text-gray-800 px-4" id="manualMinDisplay">-</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <form id="manualForm" method="POST" action="/withdraw/request">
+          <input type="hidden" name="amount" id="manualRawAmount">
+
+          <div class="mb-3 mt-4">
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Pilih Payment</label>
+            <select id="manualMethodSelect" name="paymentId" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600">
+              <option value="">-- Pilih Payment --</option>
+              <% manualPayments.forEach(function(pa) { %>
+                <option value="<%= pa.id %>" data-fee="<%= pa.fee %>" data-min="<%= pa.min %>"><%= pa.provider.toUpperCase() %> - <%= pa.accountName.toUpperCase() %> - <%= pa.accountNumber %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Nominal</label>
+            <input id="manualAmountInput" type="text" inputmode="numeric" 
+                   class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600" 
+                   placeholder="0">
+            <p id="manualAmountError" class="text-[12.5px] text-[#dc2626] mt-1 hidden"></p>                     
+          </div>
+          <div class="text-[12.5px] font-medium text-gray-700 bg-accent-100 p-2 mt-2 leading-relaxed mb-4">
+            ➤ Pastikan nomor rekening/e-wallet sudah benar, 
+            Kesalahan nomor tidak bisa Refund.
+            <br>
+            ➤ Penarikan manual akan di proses manual oleh Tim kami, dalam waktu 1-24 jam.
+          </div>
+
+          <button id="manualSubmitBtn" type="submit" 
+                  class="w-full bg-brand-600 hover:bg-brand-700 text-white py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2">
+            <span id="manualBtnText">Proses Penarikan</span>
+            <i id="manualBtnSpinner" class="fas fa-spinner fa-spin text-[12.5px] hidden"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL INSTAN -->
+  <div id="instantModal" class="fixed inset-0 z-[150] hidden flex items-center justify-center p-6">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeInstantModal()"></div>
+    <div class="relative bg-white border border-[#dddddd] rounded-[2px] shadow-sm w-full max-w-sm">
+      <div class="px-5 py-3 border-b border-[#dddddd] flex items-center justify-between">
+        <h3 class="text-sm font-medium text-gray-800">Penarikan Instan</h3>
+        <button onclick="closeInstantModal()" class="w-7 h-7 flex items-center justify-center rounded-[2px] text-gray-800 hover:bg-gray-100">
+          <i class="fas fa-times text-sm"></i>
+        </button>
+      </div>
+      <div class="p-5">
+        <% if (instantPayments.length === 0) { %>
+          <p class="text-[12.5px] font-medium text-gray-700 mb-3">
+            <%= totalPayments === 0 ? 'Kamu belum punya payment.' : 'Payment kamu belum tersedia untuk penarikan instan.' %>
+            Tambahkan atau ajukan payment di halaman <a href="/profile" class="text-brand-600 underline">Profil</a>.
+          </p>
+        <% } %>
+        <table class="w-full text-[12.5px] text-left detail-table border border-[#dddddd] rounded-[2px] mb-4">
+          <tbody>
+            <tr>
+              <td class="w-1/1 text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Saldo Tersedia</td>
+              <td class="text-[12.5px] font-medium text-gray-800 px-4">Rp <%= user.balance.toLocaleString('id-ID') %></td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Biaya Admin</td>
+              <td class="text-[12.5px] font-medium text-gray-800 px-4" id="instantFeeDisplay">-</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Minimal Penarikan</td>
+              <td class="text-[12.5px] font-medium text-gray-800 px-4" id="instantMinDisplay">Rp 0</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <form id="instantForm" method="POST" action="/withdraw/instant">
+          <input type="hidden" name="amount" id="instantRawAmount">
+
+          <div class="mb-3">
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Pilih Payment</label>
+            <select id="instantMethodSelect" name="paymentId" class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500">
+              <option value="">-- Pilih Payment --</option>
+              <% instantPayments.forEach(function(pa) { %>
+                <option value="<%= pa.id %>" data-fee="<%= pa.fee %>" data-min="<%= pa.min %>"><%= pa.provider.toUpperCase() %> - <%= pa.accountName.toUpperCase() %> - <%= pa.accountNumber %></option>
+              <% }); %>
+            </select>
+          </div>
+
+          <div class="mb-4">
+            <label class="block text-[12.5px] font-medium text-gray-700 mb-2">Nominal</label>
+            <input id="instantAmountInput" type="text" inputmode="numeric" 
+                   class="w-full bg-white border border-[#dddddd] rounded-[2px] px-3 py-3 text-[12.5px] font-medium text-gray-800 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" 
+                   placeholder="0">
+            <p id="instantAmountError" class="text-[12.5px] text-[#dc2626] mt-1 hidden"></p>
+          </div>
+
+          <div class="text-[12.5px] font-medium text-gray-700 bg-green-100 p-2 mt-2 leading-relaxed mb-4">
+            ➤ Pastikan nomor rekening/e-wallet sudah benar, 
+            Kesalahan nomor tidak bisa Refund.
+            <br>
+            ➤ Penarikan instan akan di proses otomatis oleh sistem, dalam waktu 1-2 menit.
+          </div>          
+
+          <button id="instantSubmitBtn" type="submit" 
+                  class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-[2px] text-[12.5px] font-medium transition-colors flex items-center justify-center gap-2">
+            <span id="instantBtnText">Proses Penarikan Instan</span>
+            <i id="instantBtnSpinner" class="fas fa-spinner fa-spin text-[12.5px] hidden"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detail Withdraw -->
+  <div id="withdrawDetailModal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-6">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" onclick="closeWithdrawDetailModal()"></div>
+    
+    <div class="relative bg-white border border-[#dddddd] rounded-[2px] w-full max-w-lg shadow-sm" id="withdrawDetailContent">
+      <div class="px-5 py-3 border-b border-[#dddddd] flex items-center justify-between">
+        <span class="text-sm font-medium text-gray-800">Detail Penarikan</span>
+        <button onclick="closeWithdrawDetailModal()" class="w-7 h-7 flex items-center justify-center rounded-[2px] text-gray-500 hover:bg-gray-100 transition-colors">
+          <i class="fas fa-times text-sm"></i>
+        </button>
+      </div>
+
+      <div class="p-5 bg-white">
+        <table class="w-full text-[12.5px] text-left detail-table border border-[#dddddd] rounded-[2px] mb-4">
+          <tbody>
+            <tr>
+              <td class="w-1/1 text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">ID Transaksi</td>
+              <td id="modalWithdrawId" class="text-[12.5px] font-medium text-brand-600 px-4">-</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Status</td>
+              <td id="modalWithdrawStatus" class="text-[12.5px] font-medium px-4">-</td>
+            </tr>
+            <tr id="modalWithdrawTypeRow" style="display: none;">
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Tipe</td>
+              <td id="modalWithdrawType" class="text-[12.5px] font-medium text-gray-800 px-4">-</td>
+            </tr>
+            <tr id="modalWithdrawAdminNoteRow" style="display: none;">
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Keterangan</td>
+              <td id="modalWithdrawAdminNote" class="text-[12.5px] font-medium text-gray-800 px-4">-</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Tanggal</td>
+              <td id="modalWithdrawTanggal" class="text-[12.5px] font-medium text-gray-800 px-4">-</td>
+            </tr>
+            <tr id="modalWithdrawCompletedRow" style="display: none;">
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Tanggal Selesai</td>
+              <td id="modalWithdrawCompleted" class="text-[12.5px] font-medium text-gray-800 px-4">-</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Provider Payment</td>
+              <td id="modalWithdrawMethod" class="text-[12.5px] font-medium text-gray-800 px-4">-</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Nama Akun</td>
+              <td id="modalWithdrawName" class="text-[12.5px] font-medium text-gray-800 px-4">-</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">No. Rekening</td>
+              <td id="modalWithdrawAccount" class="text-[12.5px] font-medium text-gray-800 px-4">-</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Jumlah</td>
+              <td id="modalWithdrawAmount" class="text-[12.5px] font-medium text-gray-800 px-4">Rp 0</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Biaya Admin</td>
+              <td id="modalWithdrawFee" class="text-[12.5px] font-medium text-gray-800 px-4">Rp 0</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Total Dipotong</td>
+              <td id="modalWithdrawTotalPotong" class="text-[12.5px] font-medium text-gray-800 px-4">Rp 0</td>
+            </tr>
+            <tr>
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Total Diterima</td>
+              <td id="modalWithdrawTotal" class="text-[12.5px] font-medium text-gray-800 px-4">Rp 0</td>
+            </tr>
+            <!-- Saldo Akhir (hanya jika status success/paid) -->
+            <tr id="modalSaldoAkhirRow" class="hidden">
+              <td class="text-[12.5px] font-medium text-gray-800 border-r border-[#dddddd]">Saldo Akhir</td>
+              <td id="modalSaldoAkhir" class="text-[12.5px] font-medium text-gray-800 px-4">-</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('partials/footer') %>
+
+<script>
+  const h2hConfigured = <%= (settings.paymentGateway === 'xendit' ? !!settings.xenditSecretKey : !!(settings.h2hIdMerchant && settings.h2hPin && settings.h2hPassword)) ? 'true' : 'false' %>;
+  const instantMethodsAvailable = <%= (typeof instantMethods !== 'undefined' && instantMethods.length > 0) ? 'true' : 'false' %>;
+  const MAX_WITHDRAW = 1000000;
+
+  function formatDateCell(cell) {
+    const timestamp = cell.dataset.timestamp;
+    if (!timestamp) return;
+    const d = new Date(timestamp);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const dateNum = String(d.getDate()).padStart(2, '0');
+    const timeStr = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    cell.textContent = `${year}-${month}-${dateNum} ${timeStr}`;
+  }
+
+  // ========== MODAL MANUAL ==========
+  const manualModal = document.getElementById('manualModal');
+  const manualMethodSelect = document.getElementById('manualMethodSelect');
+  const manualFeeDisplay = document.getElementById('manualFeeDisplay');
+  const manualMinDisplay = document.getElementById('manualMinDisplay');
+  const manualAmountInput = document.getElementById('manualAmountInput');
+  const manualRawAmount = document.getElementById('manualRawAmount');
+  const manualForm = document.getElementById('manualForm');
+  const manualSubmitBtn = document.getElementById('manualSubmitBtn');
+  const manualBtnText = document.getElementById('manualBtnText');
+  const manualBtnSpinner = document.getElementById('manualBtnSpinner');
+  const manualAmountError = document.getElementById('manualAmountError');
+
+  window.openManualModal = function() {
+    manualModal.classList.remove('hidden');
+    if (manualMethodSelect) manualMethodSelect.value = '';
+    if (manualAmountInput) manualAmountInput.value = '';
+    if (manualRawAmount) manualRawAmount.value = '';
+    if (manualAmountError) manualAmountError.classList.add('hidden');
+    updateManualInfo();
+  };
+
+  window.closeManualModal = function() {
+    manualModal.classList.add('hidden');
+  };
+
+  function updateManualInfo() {
+    const selected = manualMethodSelect?.options[manualMethodSelect.selectedIndex];
+    const fee = parseInt(selected?.dataset.fee) || 0;
+    const min = parseInt(selected?.dataset.min) || 0;
+    if (manualFeeDisplay) manualFeeDisplay.textContent = `Rp ${fee.toLocaleString('id-ID')}`;
+    if (manualMinDisplay) manualMinDisplay.textContent = min > 0 ? `Rp ${min.toLocaleString('id-ID')}` : '-';
+  }
+
+  if (manualMethodSelect) manualMethodSelect.addEventListener('change', updateManualInfo);
+
+  if (manualAmountInput && manualRawAmount) {
+    manualAmountInput.addEventListener('input', function() {
+      let raw = this.value.replace(/[^0-9]/g, '');
+      if (raw) {
+        this.value = parseInt(raw, 10).toLocaleString('id-ID');
+        manualRawAmount.value = raw;
+      } else {
+        this.value = '';
+        manualRawAmount.value = '';
+      }
+    });
+  }
+
+  if (manualForm) {
+    manualForm.addEventListener('submit', function(e) {
+      const selected = manualMethodSelect?.options[manualMethodSelect.selectedIndex];
+      if (!selected || !selected.value) {
+        e.preventDefault();
+        alert('Pilih payment terlebih dahulu.');
+        return false;
+      }
+      const minFromMethod = parseInt(selected?.dataset.min) || 0;
+      const value = parseInt(manualRawAmount?.value, 10);
+      if (manualAmountError) manualAmountError.classList.add('hidden');
+      if (isNaN(value) || value <= 0) {
+        e.preventDefault();
+        if (manualAmountError) {
+          manualAmountError.textContent = 'Nominal harus lebih dari 0.';
+          manualAmountError.classList.remove('hidden');
+        }
+        manualAmountInput?.focus();
+        return false;
+      }
+      if (minFromMethod > 0 && value < minFromMethod) {
+        e.preventDefault();
+        if (manualAmountError) {
+          manualAmountError.textContent = `Minimal penarikan Rp ${minFromMethod.toLocaleString('id-ID')}`;
+          manualAmountError.classList.remove('hidden');
+        }
+        manualAmountInput?.focus();
+        return false;
+      }
+      if (value > MAX_WITHDRAW) {
+        e.preventDefault();
+        if (manualAmountError) {
+          manualAmountError.textContent = 'Maksimal penarikan Rp 1.000.000';
+          manualAmountError.classList.remove('hidden');
+        }
+        manualAmountInput?.focus();
+        return false;
+      }
+      const balance = <%= user.balance %>;
+      const fee = parseInt(selected?.dataset.fee) || 0;
+      if (value + fee > balance) {
+        e.preventDefault();
+        if (manualAmountError) {
+          manualAmountError.textContent = 'Saldo tidak mencukupi (termasuk biaya admin).';
+          manualAmountError.classList.remove('hidden');
+        }
+        manualAmountInput?.focus();
+        return false;
+      }
+      manualSubmitBtn.disabled = true;
+      manualBtnText.textContent = 'Memproses...';
+      manualBtnSpinner.classList.remove('hidden');
+    });
+  }
+
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted && manualSubmitBtn) {
+      manualSubmitBtn.disabled = false;
+      manualBtnText.textContent = 'Proses Penarikan';
+      manualBtnSpinner.classList.add('hidden');
+    }
+  });
+
+  // ========== MODAL INSTAN ==========
+  const instantModal = document.getElementById('instantModal');
+  const instantMethodSelect = document.getElementById('instantMethodSelect');
+  const instantFeeDisplay = document.getElementById('instantFeeDisplay');
+  const instantMinDisplay = document.getElementById('instantMinDisplay');
+  const instantAmountInput = document.getElementById('instantAmountInput');
+  const instantRawAmount = document.getElementById('instantRawAmount');
+  const instantForm = document.getElementById('instantForm');
+  const instantSubmitBtn = document.getElementById('instantSubmitBtn');
+  const instantBtnText = document.getElementById('instantBtnText');
+  const instantBtnSpinner = document.getElementById('instantBtnSpinner');
+  const instantAmountError = document.getElementById('instantAmountError');
+
+  window.openInstantModal = function() {
+    if (!h2hConfigured) {
+      alert('Fitur Penarikan Instan belum tersedia.');
+      return;
+    }
+    if (!instantMethodsAvailable) {
+      alert('Fitur Penarikan Instan belum tersedia.');
+      return;
+    }
+    instantModal.classList.remove('hidden');
+    if (instantMethodSelect) instantMethodSelect.value = '';
+    if (instantAmountInput) instantAmountInput.value = '';
+    if (instantRawAmount) instantRawAmount.value = '';
+    if (instantAmountError) instantAmountError.classList.add('hidden');
+    updateInstantInfo();
+  };
+
+  window.closeInstantModal = function() {
+    instantModal.classList.add('hidden');
+  };
+
+  function updateInstantInfo() {
+    const selected = instantMethodSelect?.options[instantMethodSelect.selectedIndex];
+    const fee = parseInt(selected?.dataset.fee) || 0;
+    const min = parseInt(selected?.dataset.min) || 0;
+    if (instantFeeDisplay) instantFeeDisplay.textContent = `Rp ${fee.toLocaleString('id-ID')}`;
+    if (instantMinDisplay) instantMinDisplay.textContent = min > 0 ? `Rp ${min.toLocaleString('id-ID')}` : '-';
+  }
+
+  if (instantMethodSelect) instantMethodSelect.addEventListener('change', updateInstantInfo);
+
+  if (instantAmountInput && instantRawAmount) {
+    instantAmountInput.addEventListener('input', function() {
+      let raw = this.value.replace(/[^0-9]/g, '');
+      if (raw) {
+        this.value = parseInt(raw, 10).toLocaleString('id-ID');
+        instantRawAmount.value = raw;
+      } else {
+        this.value = '';
+        instantRawAmount.value = '';
+      }
+    });
+  }
+
+  if (instantForm) {
+    instantForm.addEventListener('submit', function(e) {
+      const selected = instantMethodSelect?.options[instantMethodSelect.selectedIndex];
+      if (!selected || !selected.value) {
+        e.preventDefault();
+        alert('Pilih payment terlebih dahulu.');
+        return false;
+      }
+      const fee = parseInt(selected.dataset.fee) || 0;
+      const minAmount = parseInt(selected.dataset.min) || 0;
+      const amount = parseInt(instantRawAmount?.value, 10);
+      if (instantAmountError) instantAmountError.classList.add('hidden');
+      if (isNaN(amount) || amount <= 0) {
+        e.preventDefault();
+        if (instantAmountError) {
+          instantAmountError.textContent = 'Nominal harus lebih dari 0.';
+          instantAmountError.classList.remove('hidden');
+        }
+        instantAmountInput?.focus();
+        return false;
+      }
+      if (minAmount > 0 && amount < minAmount) {
+        e.preventDefault();
+        if (instantAmountError) {
+          instantAmountError.textContent = `Minimal penarikan instan Rp ${minAmount.toLocaleString('id-ID')}`;
+          instantAmountError.classList.remove('hidden');
+        }
+        instantAmountInput?.focus();
+        return false;
+      }
+      if (amount > MAX_WITHDRAW) {
+        e.preventDefault();
+        if (instantAmountError) {
+          instantAmountError.textContent = 'Maksimal penarikan instan Rp 1.000.000';
+          instantAmountError.classList.remove('hidden');
+        }
+        instantAmountInput?.focus();
+        return false;
+      }
+      const balance = <%= user.balance %>;
+      if (amount + fee > balance) {
+        e.preventDefault();
+        if (instantAmountError) {
+          instantAmountError.textContent = 'Saldo tidak mencukupi (termasuk biaya admin).';
+          instantAmountError.classList.remove('hidden');
+        }
+        return false;
+      }
+      instantSubmitBtn.disabled = true;
+      instantBtnText.textContent = 'Memproses...';
+      instantBtnSpinner.classList.remove('hidden');
+    });
+  }
+
+  // ========== PENCARIAN & FILTER ==========
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.addEventListener('input', applyCurrentFilterAndSearch);
+
+  let currentFilterStatus = 'all';
+  const filterButton = document.getElementById('filterButton');
+  const filterMenu = document.getElementById('filterMenu');
+  let isFilterOpen = false;
+
+  if (filterButton) {
+    filterButton.addEventListener('click', function(e) {
+      e.stopPropagation();
+      isFilterOpen = !isFilterOpen;
+      filterMenu.classList.toggle('hidden', !isFilterOpen);
+    });
+  }
+
+  document.addEventListener('click', function(e) {
+    if (filterButton && filterMenu && !filterButton.contains(e.target) && !filterMenu.contains(e.target)) {
+      isFilterOpen = false;
+      filterMenu.classList.add('hidden');
+    }
+  });
+
+  document.querySelectorAll('.filter-option').forEach(opt => {
+    opt.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const val = this.dataset.val;
+      const text = this.innerText.trim().split(' ')[0];
+      selectFilter(val, text);
+    });
+  });
+
+  window.selectFilter = function(val, text) {
+    currentFilterStatus = val;
+    document.getElementById('activeFilterText').innerText = text;
+    document.querySelectorAll('.filter-option').forEach(btn => {
+      const icon = btn.querySelector('.check-icon');
+      icon.classList.toggle('hidden', btn.dataset.val !== val);
+    });
+    applyCurrentFilterAndSearch();
+    isFilterOpen = false;
+    filterMenu?.classList.add('hidden');
+  };
+
+  function applyCurrentFilterAndSearch() {
+    const searchText = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const trxItems = document.querySelectorAll('.trx-item');
+    const emptyTrx = document.getElementById('emptyTrxState');
+    const emptyFilter = document.getElementById('emptyFilterState');
+
+    if (trxItems.length === 0) {
+      emptyTrx?.classList.remove('hidden');
+      emptyFilter?.classList.add('hidden');
+      return;
+    }
+
+    let visible = 0;
+    trxItems.forEach(item => {
+      const status = item.dataset.status;
+      const id = item.dataset.id.toLowerCase();
+      let showByStatus = currentFilterStatus === 'all' ||
+        (currentFilterStatus === 'success' && (status === 'paid' || status === 'success')) ||
+        (currentFilterStatus === 'pending' && status === 'pending') ||
+        (currentFilterStatus === 'failed' && (status === 'expired' || status === 'rejected'));
+      let showBySearch = searchText === '' || id.includes(searchText);
+      const show = showByStatus && showBySearch;
+      item.style.display = show ? 'table-row' : 'none';
+      if (show) visible++;
+    });
+
+    emptyTrx?.classList.toggle('hidden', visible > 0 || trxItems.length > 0);
+    emptyFilter?.classList.toggle('hidden', visible > 0);
+  }
+
+  // ========== MODAL DETAIL (DENGAN SALDO AKHIR) ==========
+  function getWithdrawDataFromElement(el) {
+    return {
+      id: el.dataset.id,
+      amount: el.dataset.amount,
+      fee: el.dataset.fee,
+      total: el.dataset.total,
+      method: el.dataset.method,
+      account: el.dataset.account,
+      name: el.dataset.name,
+      status: el.dataset.status,
+      createdAt: el.dataset.created,
+      completedAt: el.dataset.completed || null,
+      adminNote: el.dataset.adminNote || '',
+      instant: el.dataset.instant === 'true',
+      balanceAfter: el.dataset.balanceAfter
+    };
+  }
+
+  function openDetailModalWithData(data) {
+    document.getElementById('modalWithdrawId').innerText = data.id;
+
+    const createdDate = new Date(data.createdAt);
+    const year = createdDate.getFullYear();
+    const month = String(createdDate.getMonth() + 1).padStart(2, '0');
+    const dateNum = String(createdDate.getDate()).padStart(2, '0');
+    const time = createdDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+    document.getElementById('modalWithdrawTanggal').innerText = `${year}-${month}-${dateNum} ${time}`;
+
+    const completedRow = document.getElementById('modalWithdrawCompletedRow');
+    const completedEl = document.getElementById('modalWithdrawCompleted');
+    if (data.completedAt) {
+      const compDate = new Date(data.completedAt);
+      const cy = compDate.getFullYear();
+      const cm = String(compDate.getMonth() + 1).padStart(2, '0');
+      const cd = String(compDate.getDate()).padStart(2, '0');
+      const ct = compDate.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace('.', ':');
+      completedEl.innerText = `${cy}-${cm}-${cd} ${ct}`;
+      completedRow.style.display = 'table-row';
+    } else {
+      completedRow.style.display = 'none';
+    }
+
+    document.getElementById('modalWithdrawMethod').innerText = data.method || '-';
+    document.getElementById('modalWithdrawAccount').innerText = data.account || '-';
+    document.getElementById('modalWithdrawName').innerText = data.name || '-';
+
+    const nominal = Math.abs(parseInt(data.amount));
+    const fee = parseInt(data.fee) || 0;
+    const totalPotong = nominal + fee;
+
+    document.getElementById('modalWithdrawAmount').innerText = `Rp ${nominal.toLocaleString('id-ID')}`;
+    document.getElementById('modalWithdrawFee').innerText = `Rp ${fee.toLocaleString('id-ID')}`;
+    document.getElementById('modalWithdrawTotalPotong').innerText = `Rp ${totalPotong.toLocaleString('id-ID')}`;
+    document.getElementById('modalWithdrawTotal').innerText = `Rp ${nominal.toLocaleString('id-ID')}`;
+
+    const st = data.status;
+    let statusText = (st === 'paid' || st === 'success') ? 'completed' : st;
+    let statusColor = st === 'paid' || st === 'success' ? 'text-brand-600' : (st === 'pending' ? 'text-[#eab308]' : 'text-[#dc2626]');
+    const statusEl = document.getElementById('modalWithdrawStatus');
+    statusEl.innerText = statusText;
+    statusEl.className = `text-[12.5px] font-medium px-4 ${statusColor}`;
+
+    const typeRow = document.getElementById('modalWithdrawTypeRow');
+    const typeEl = document.getElementById('modalWithdrawType');
+    typeEl.innerText = data.instant ? 'Instan' : 'Manual';
+    typeRow.style.display = 'table-row';
+
+    const adminRow = document.getElementById('modalWithdrawAdminNoteRow');
+    const adminEl = document.getElementById('modalWithdrawAdminNote');
+    adminEl.innerText = (data.adminNote && data.adminNote.trim() !== '') ? data.adminNote : '-';
+    adminRow.style.display = 'table-row';
+
+    // === SALDO AKHIR ===
+    const saldoAkhirRow = document.getElementById('modalSaldoAkhirRow');
+    const saldoAkhirEl = document.getElementById('modalSaldoAkhir');
+    if (st === 'paid' || st === 'success') {
+      saldoAkhirEl.innerText = data.balanceAfter ? `Rp ${parseInt(data.balanceAfter).toLocaleString('id-ID')}` : "-";
+      saldoAkhirRow.classList.remove('hidden');
+    } else {
+      saldoAkhirRow.classList.add('hidden');
+    }
+
+    document.getElementById('withdrawDetailModal').classList.remove('hidden');
+  }
+
+  function closeWithdrawDetailModal() {
+    document.getElementById('withdrawDetailModal').classList.add('hidden');
+    if (window.location.hash.startsWith('#withdraw-')) {
+      history.back();
+      setTimeout(() => {
+        if (window.location.hash.startsWith('#withdraw-')) window.location.hash = '';
+      }, 100);
+    }
+  }
+
+  function handleWithdrawRouter() {
+    const hash = window.location.hash;
+    if (!hash.startsWith('#withdraw-')) return;
+    const trxId = hash.replace('#withdraw-', '');
+    const element = document.querySelector(`.trx-item[data-id="${trxId}"]`);
+    if (!element) {
+      closeWithdrawDetailModal();
+      history.replaceState(null, null, window.location.pathname + window.location.search);
+      return;
+    }
+    const data = getWithdrawDataFromElement(element);
+    openDetailModalWithData(data);
+  }
+
+  window.addEventListener('hashchange', () => {
+    if (window.location.hash.startsWith('#withdraw-')) {
+      handleWithdrawRouter();
+    } else {
+      if (!document.getElementById('withdrawDetailModal').classList.contains('hidden')) {
+        closeWithdrawDetailModal();
+      }
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.date-cell').forEach(formatDateCell);
+    if (window.location.hash.startsWith('#withdraw-')) handleWithdrawRouter();
+    applyCurrentFilterAndSearch();
+  });
+</script>

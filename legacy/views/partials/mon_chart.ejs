@@ -1,0 +1,333 @@
+  <!-- ========== STATISTIK TERKINI + MONITORING ========== -->
+  <style>
+    .mon-dot-ping { animation: mon-ping 1.6s cubic-bezier(0,0,.2,1) infinite; }
+    @keyframes mon-ping { 75%, 100% { transform: scale(2.6); opacity: 0; } }
+    #monChartWrap canvas { display: block; width: 100%; height: 100%; touch-action: pan-y; }
+    #monTip { pointer-events: none; transition: opacity .12s; }
+    @media (prefers-reduced-motion: reduce) { .mon-dot-ping { animation: none; } }
+  </style>
+
+  <div class="<%= locals.monClass || 'mb-8' %>" id="monitoring">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-base font-medium text-gray-800"><%= locals.monTitle || 'Statistik Terkini' %></h2>
+      <span id="monLive" class="inline-flex items-center gap-1.5 text-[11.5px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2.5 py-1">
+        <span class="relative flex h-2 w-2">
+          <span class="mon-dot-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span id="monLiveDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        <span id="monLiveText">Live</span>
+      </span>
+    </div>
+
+    <% if (locals.showStats !== false) { %>
+    <div class="grid grid-cols-1 gap-3 mb-4">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-6 h-6 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center text-[11px]"><i class="fa-solid fa-arrow-trend-up"></i></span>
+          <span class="text-[11.5px] font-medium text-gray-500 leading-tight">Nominal Transaksi (24 jam terakhir)</span>
+        </div>
+        <div id="statDeposit" class="text-[17px] sm:text-xl font-semibold text-gray-800 tabular-nums break-words">Rp 0</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-6 h-6 rounded-md bg-violet-100 text-violet-600 flex items-center justify-center text-[11px]"><i class="fa-solid fa-money-bill-transfer"></i></span>
+          <span class="text-[11.5px] font-medium text-gray-500 leading-tight">Pencairan Dana (24 jam terakhir)</span>
+        </div>
+        <div id="statWithdraw" class="text-[17px] sm:text-xl font-semibold text-gray-800 tabular-nums break-words">Rp 0</div>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
+        <div class="flex items-center gap-2 mb-1.5">
+          <span class="w-6 h-6 rounded-md bg-sky-100 text-sky-600 flex items-center justify-center text-[11px]"><i class="fa-solid fa-users"></i></span>
+          <span class="text-[11.5px] font-medium text-gray-500 leading-tight">Total Pengguna</span>
+        </div>
+        <div id="statUsers" class="text-[17px] sm:text-xl font-semibold text-gray-800 tabular-nums">0</div>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Panel grafik ala crypto -->
+    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="min-w-0">
+          <div class="text-[11.5px] font-medium text-gray-500">Volume deposit berhasil · 24 jam</div>
+          <div class="flex items-baseline gap-2 flex-wrap">
+            <span id="monBig" class="text-xl sm:text-2xl font-semibold text-gray-800 tabular-nums">Rp 0</span>
+            <span id="monChange" class="hidden text-[12px] font-semibold rounded-md px-1.5 py-0.5"></span>
+          </div>
+        </div>
+        <div class="inline-flex rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-[12px] font-semibold shrink-0" role="tablist" aria-label="Pilih data grafik">
+          <button type="button" data-mode="amount" class="mon-tab px-2.5 py-1 rounded-md bg-white shadow-sm text-gray-800" role="tab" aria-selected="true">Nominal</button>
+          <button type="button" data-mode="count" class="mon-tab px-2.5 py-1 rounded-md text-gray-500" role="tab" aria-selected="false">Transaksi</button>
+        </div>
+      </div>
+
+      <div id="monChartWrap" class="relative mt-3 h-52 sm:h-60 select-none">
+        <canvas id="monChart" aria-label="Grafik volume deposit 24 jam terakhir" role="img"></canvas>
+        <span id="monPulse" class="absolute hidden h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <span class="mon-dot-ping absolute inline-flex h-full w-full rounded-full opacity-60" id="monPulseRing"></span>
+          <span class="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-white" id="monPulseDot"></span>
+        </span>
+        <div id="monTip" class="absolute opacity-0 z-10 bg-slate-800 text-white rounded-lg px-2.5 py-1.5 text-[11.5px] leading-snug shadow-lg whitespace-nowrap"></div>
+        <div id="monEmpty" class="hidden absolute inset-0 items-center justify-center text-[12.5px] font-medium text-gray-400 pointer-events-none">Belum ada deposit berhasil dalam 24 jam terakhir</div>
+      </div>
+
+      <!-- Indikator monitoring -->
+      <div class="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-100">
+        <div>
+          <div class="text-[11px] font-medium text-gray-500">Status sistem</div>
+          <div id="monStatus" class="text-[13px] font-semibold text-emerald-600 flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-[11px]"></i><span>Operasional</span></div>
+        </div>
+        <div>
+          <div class="text-[11px] font-medium text-gray-500">Rasio sukses 24 jam</div>
+          <div id="monSuccess" class="text-[13px] font-semibold text-gray-800 tabular-nums">-</div>
+        </div>
+        <div>
+          <div class="text-[11px] font-medium text-gray-500">Respon server</div>
+          <div id="monLatency" class="text-[13px] font-semibold text-gray-800 tabular-nums">-</div>
+        </div>
+      </div>
+      <div class="mt-2 text-[11px] text-gray-400">Diperbarui <span id="monAgo">baru saja</span> · otomatis tiap 20 detik</div>
+
+      <!-- Aktivitas terbaru -->
+      <div class="mt-4 pt-3 border-t border-slate-100">
+        <div class="text-[12.5px] font-semibold text-gray-800 mb-2">Deposit berhasil terbaru</div>
+        <ul id="monRecent" class="space-y-1.5"></ul>
+        <div id="monRecentEmpty" class="hidden text-[12px] text-gray-400">Belum ada transaksi.</div>
+      </div>
+    </div>
+  </div>
+
+  <script id="pubInit" type="application/json"><%- JSON.stringify(pubStats || null).replace(/</g, '\\u003c') %></script>
+  <script>
+  (function () {
+    var $ = function (id) { return document.getElementById(id); };
+    var canvas = $('monChart'), wrap = $('monChartWrap'), ctx = canvas.getContext('2d');
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var data = null, mode = 'amount', hoverIdx = -1, reveal = 1, lastOk = Date.now();
+    var shown = { dep: 0, wd: 0, users: 0, big: 0 };
+
+    var rp = function (n) { return 'Rp ' + Math.round(n).toLocaleString('id-ID'); };
+    var num = function (n) { return Math.round(n).toLocaleString('id-ID'); };
+    var short = function (n) {
+      if (n >= 1e9) return (n / 1e9).toFixed(1).replace('.0', '') + ' M';
+      if (n >= 1e6) return (n / 1e6).toFixed(1).replace('.0', '') + ' jt';
+      if (n >= 1e3) return Math.round(n / 1e3) + ' rb';
+      return String(Math.round(n));
+    };
+    var hhmm = function (t) { var d = new Date(t); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); };
+    var ago = function (t) {
+      var s = Math.max(0, Math.round((Date.now() - t) / 1000));
+      if (s < 60) return s + ' detik lalu';
+      if (s < 3600) return Math.floor(s / 60) + ' menit lalu';
+      if (s < 86400) return Math.floor(s / 3600) + ' jam lalu';
+      return Math.floor(s / 86400) + ' hari lalu';
+    };
+
+    // hitung naik halus ke angka baru
+    function tween(key, el, to, fmt) {
+      if (!el) return;
+      var from = shown[key], t0 = performance.now(), dur = reduce ? 0 : 900;
+      if (from === to) { el.textContent = fmt(to); return; }
+      (function step(now) {
+        var p = dur ? Math.min(1, (now - t0) / dur) : 1;
+        var e = 1 - Math.pow(1 - p, 3);
+        shown[key] = from + (to - from) * e;
+        el.textContent = fmt(shown[key]);
+        if (p < 1) requestAnimationFrame(step); else shown[key] = to;
+      })(t0);
+    }
+
+    function values() { return data.points.map(function (p) { return mode === 'amount' ? p.amount : p.count; }); }
+    function trendUp() { return data.changePct === null || data.changePct >= 0; }
+
+    var geo = null; // posisi titik untuk hover
+    function draw() {
+      if (!data) return;
+      var dpr = window.devicePixelRatio || 1;
+      var w = wrap.clientWidth, h = wrap.clientHeight;
+      if (!w || !h) return;
+      canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+
+      var vals = values(), n = vals.length;
+      var maxV = Math.max.apply(null, vals);
+      var empty = maxV <= 0;
+      $('monEmpty').style.display = empty ? 'flex' : 'none';
+      var top = mode === 'count' ? Math.max(4, Math.ceil(maxV * 1.2)) : Math.max(maxV * 1.2, 10000);
+      var pad = { l: 4, r: 40, t: 10, b: 20 };
+      var cw = w - pad.l - pad.r, ch = h - pad.t - pad.b;
+      var X = function (i) { return pad.l + (i * cw) / (n - 1); };
+      var Y = function (v) { return pad.t + ch * (1 - v / top); };
+      var up = trendUp();
+      var col = up ? '16,185,129' : '239,68,68';
+
+      // grid + label sumbu Y (kanan, seperti chart crypto)
+      ctx.font = '500 10.5px Inter, system-ui, sans-serif';
+      ctx.textBaseline = 'middle';
+      for (var g = 0; g <= 4; g++) {
+        var gy = pad.t + (ch * g) / 4;
+        ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
+        ctx.beginPath(); ctx.moveTo(pad.l, gy); ctx.lineTo(w - pad.r + 4, gy); ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = '#94a3b8'; ctx.textAlign = 'left';
+        ctx.fillText(short(top * (1 - g / 4)), w - pad.r + 8, gy);
+      }
+      // label sumbu X tiap 6 jam
+      ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'center'; ctx.fillStyle = '#94a3b8';
+      for (var i = 0; i < n; i += 12) {
+        var lx = Math.min(Math.max(X(i), 14), w - pad.r - 8);
+        ctx.fillText(hhmm(data.points[i].t), lx, h - 4);
+      }
+      ctx.fillText('Sekarang', w - pad.r - 18, h - 4);
+
+      geo = { X: X, Y: Y, vals: vals, n: n, pad: pad, w: w, h: h };
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(0, 0, (pad.l + cw + 2) * reveal + pad.l, h); ctx.clip();
+
+      // kurva gelombang (bezier horizontal, tanpa overshoot)
+      var path = new Path2D();
+      path.moveTo(X(0), Y(vals[0]));
+      for (var k = 1; k < n; k++) {
+        var xm = (X(k - 1) + X(k)) / 2;
+        path.bezierCurveTo(xm, Y(vals[k - 1]), xm, Y(vals[k]), X(k), Y(vals[k]));
+      }
+      var fill = new Path2D(path);
+      fill.lineTo(X(n - 1), pad.t + ch); fill.lineTo(X(0), pad.t + ch); fill.closePath();
+      var grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + ch);
+      grad.addColorStop(0, 'rgba(' + col + ',.28)'); grad.addColorStop(1, 'rgba(' + col + ',0)');
+      ctx.fillStyle = grad; ctx.fill(fill);
+      ctx.lineWidth = 2.25; ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgb(' + col + ')'; ctx.stroke(path);
+      ctx.restore();
+
+      // titik live di ujung kanan
+      var pulse = $('monPulse');
+      pulse.style.display = reveal >= 1 ? 'block' : 'none';
+      pulse.style.left = X(n - 1) + 'px'; pulse.style.top = Y(vals[n - 1]) + 'px';
+      $('monPulseRing').style.background = 'rgb(' + col + ')';
+      $('monPulseDot').style.background = 'rgb(' + col + ')';
+
+      // crosshair saat disentuh / hover
+      var tip = $('monTip');
+      if (hoverIdx >= 0) {
+        var hx = X(hoverIdx), hy = Y(vals[hoverIdx]);
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+        ctx.beginPath(); ctx.moveTo(hx, pad.t); ctx.lineTo(hx, pad.t + ch); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#fff'; ctx.strokeStyle = 'rgb(' + col + ')'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(hx, hy, 4, 0, 6.2832); ctx.fill(); ctx.stroke();
+        var p = data.points[hoverIdx];
+        tip.innerHTML = '<div class="text-slate-300">' + hhmm(p.t) + ' – ' + hhmm(p.t + 1800000) + '</div><div class="font-semibold">' +
+          (mode === 'amount' ? rp(p.amount) : num(p.count) + ' transaksi') + '</div>';
+        tip.style.opacity = 1;
+        var tw = tip.offsetWidth;
+        tip.style.left = Math.min(Math.max(hx - tw / 2, 0), w - tw) + 'px';
+        tip.style.top = Math.max(hy - 52, 0) + 'px';
+      } else { tip.style.opacity = 0; }
+    }
+
+    function runReveal() {
+      if (reduce) { reveal = 1; draw(); return; }
+      var t0 = performance.now();
+      (function step(now) {
+        var p = Math.min(1, (now - t0) / 1100);
+        reveal = 1 - Math.pow(1 - p, 3);
+        draw();
+        if (p < 1) requestAnimationFrame(step);
+      })(t0);
+    }
+
+    function pointer(e) {
+      if (!geo) return;
+      var r = canvas.getBoundingClientRect();
+      var x = (e.clientX - r.left - geo.pad.l) / (geo.w - geo.pad.l - geo.pad.r);
+      hoverIdx = Math.min(geo.n - 1, Math.max(0, Math.round(x * (geo.n - 1))));
+      draw();
+    }
+    canvas.addEventListener('pointermove', pointer);
+    canvas.addEventListener('pointerdown', pointer);
+    canvas.addEventListener('pointerleave', function () { hoverIdx = -1; draw(); });
+    canvas.addEventListener('pointerup', function (e) { if (e.pointerType !== 'mouse') { hoverIdx = -1; draw(); } });
+
+    document.querySelectorAll('.mon-tab').forEach(function (b) {
+      b.addEventListener('click', function () {
+        mode = b.getAttribute('data-mode');
+        document.querySelectorAll('.mon-tab').forEach(function (x) {
+          var on = x === b;
+          x.setAttribute('aria-selected', on);
+          x.className = 'mon-tab px-2.5 py-1 rounded-md ' + (on ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500');
+        });
+        hoverIdx = -1; runReveal();
+      });
+    });
+
+    function renderRecent() {
+      var ul = $('monRecent'); ul.innerHTML = '';
+      $('monRecentEmpty').classList.toggle('hidden', data.recent.length > 0);
+      data.recent.forEach(function (r) {
+        var li = document.createElement('li');
+        li.className = 'flex items-center justify-between text-[12.5px]';
+        li.innerHTML = '<span class="flex items-center gap-2 text-gray-700"><span class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-[9px]"><i class="fa-solid fa-check"></i></span><span class="font-semibold tabular-nums">' + rp(r.amount) + '</span></span><span class="text-gray-400 text-[11.5px]" data-ts="' + r.at + '">' + ago(r.at) + '</span>';
+        ul.appendChild(li);
+      });
+    }
+
+    function render(first) {
+      tween('dep', $('statDeposit'), data.depositAmount24h, rp);
+      tween('wd', $('statWithdraw'), data.withdrawAmount24h, rp);
+      tween('users', $('statUsers'), data.totalUsers, num);
+      tween('big', $('monBig'), data.depositAmount24h, rp);
+
+      var ch = $('monChange');
+      if (data.changePct === null) { ch.classList.add('hidden'); }
+      else {
+        var u = data.changePct >= 0;
+        ch.classList.remove('hidden');
+        ch.className = 'text-[12px] font-semibold rounded-md px-1.5 py-0.5 ' + (u ? 'text-emerald-700 bg-emerald-50' : 'text-red-600 bg-red-50');
+        ch.innerHTML = '<i class="fa-solid ' + (u ? 'fa-caret-up' : 'fa-caret-down') + '"></i> ' + Math.abs(data.changePct).toLocaleString('id-ID') + '%';
+      }
+      $('monSuccess').textContent = data.successRate === null ? '-' : data.successRate.toLocaleString('id-ID') + '%';
+      renderRecent();
+      if (first) runReveal(); else draw();
+    }
+
+    function setStatus(ok, ms) {
+      var box = $('monStatus'), live = $('monLive'), dot = $('monLiveDot'), txt = $('monLiveText');
+      var slow = ok && ms > 1500;
+      var color = !ok ? 'red' : slow ? 'amber' : 'emerald';
+      box.className = 'text-[13px] font-semibold flex items-center gap-1.5 text-' + color + '-' + (color === 'emerald' ? '600' : '600');
+      box.innerHTML = '<i class="fa-solid ' + (ok ? (slow ? 'fa-triangle-exclamation' : 'fa-circle-check') : 'fa-circle-xmark') + ' text-[11px]"></i><span>' + (!ok ? 'Terputus' : slow ? 'Lambat' : 'Operasional') + '</span>';
+      live.className = 'inline-flex items-center gap-1.5 text-[11.5px] font-semibold rounded-full px-2.5 py-1 border text-' + color + '-700 bg-' + color + '-50 border-' + color + '-200';
+      dot.className = 'relative inline-flex rounded-full h-2 w-2 bg-' + color + '-500';
+      txt.textContent = ok ? 'Live' : 'Offline';
+      if (ms != null) $('monLatency').textContent = Math.round(ms) + ' ms';
+    }
+
+    function poll() {
+      if (document.hidden) return;
+      var t0 = performance.now();
+      fetch('/api/public/stats', { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (d) { var ms = performance.now() - t0; data = d; lastOk = Date.now(); setStatus(true, ms); render(false); })
+        .catch(function () { setStatus(false, null); });
+    }
+
+    setInterval(function () {
+      $('monAgo').textContent = ago(lastOk);
+      document.querySelectorAll('#monRecent [data-ts]').forEach(function (el) { el.textContent = ago(+el.getAttribute('data-ts')); });
+    }, 1000);
+    setInterval(poll, 20000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - lastOk > 20000) poll(); });
+    if (window.ResizeObserver) new ResizeObserver(function () { draw(); }).observe(wrap); else window.addEventListener('resize', draw);
+
+    // data awal dari server (tanpa menunggu fetch), lalu ukur respon server
+    try { data = JSON.parse($('pubInit').textContent); } catch (e) { data = null; }
+    if (data) { render(true); setStatus(true, null); poll(); }
+    else {
+      var t0 = performance.now();
+      fetch('/api/public/stats', { cache: 'no-store' }).then(function (r) { return r.json(); })
+        .then(function (d) { data = d; setStatus(true, performance.now() - t0); render(true); })
+        .catch(function () { setStatus(false, null); });
+    }
+  })();
+  </script>
